@@ -429,13 +429,13 @@ do
                 {
                     cls
                     $title
-                    Write-Host "Az" $eredetiou "OU számítógépeinek lekérdezése`n"                
+                    Write-Host "A(z)" $eredetiou "OU számítógépek lekérdezése`n"                
                     $napja = Read-Host -Prompt "Az elmúlt hány nap során aktív/inaktív gépeket szeretnéd lekérdezni?`nNapok száma"
                     $time = (Get-Date).Adddays(-($napja))
 
                     cls
                     $title
-                    Write-Host "Az" $eredetiou "számítógépeinek elmúlt" $napja "napjának aktivitása`n"
+                    Write-Host "A(z)" $eredetiou "számítógépek elmúlt" $napja "napjának aktivitása`n"
                     Write-Host "Az aktív, vagy inaktív gépeket szeretnéd lekérdezni?`n(A) Ha az aktív gépeket`n(I) Ha az inaktív gépeket"
                     $avi = Valaszt ("A", "I")
 
@@ -452,11 +452,13 @@ do
                 }
                 else
                 {
+                    cls
+                    $title
                     $csvout = "D:\$ounev-Szamitogepei.csv"
                     $ment = Get-ADComputer -SearchBase $ou -Properties LastLogonDate, OperatingSystem | select name, LastLogonDate, OperatingSystem
                 }
                 CSVfunkciok $ment $csvout
-                Write-Host "`nHa más OU-t kérdeznél le, nyomd meg az R-t`nHa visszalépnél a program elejére, nyomd meg az N-t`nHa pedig kilépnél, nyomd meg a Q-t!`n"                
+                Write-Host "`nHa más OU-t kérdeznél le, nyomd meg az R-t`nHa visszalépnél a program elejére, nyomd meg az N-t`nHa pedig kilépnél, nyomd meg a Q-t!`n"
                 $kilep = Valaszt ("N", "Q", "R")
             } while ($kilep -eq "R")
         }
@@ -469,8 +471,45 @@ do
             $ou = OUcheck $eredetiou
             $ounev = OUment $ou
 
-            $ment = Get-ADUser -filter * -SearchBase $ou -Properties name, SamAccountName, description, LastLogon, distinguishedname | select name, description, SamAccountName, @{n='LastLogon';e={[DateTime]::FromFileTime($_.LastLogon)}}, distinguishedname
-            Write-Host "Ez a funkció még nincs kész"
+            cls
+            $title
+            Write-Host "Csak egy általános listát kérnél le, vagy aktivitás/inaktivitás ideje szerint is szűrnéd?`n(1) Általános lista`n(2) Aktivitás/inaktivitás szerint szűrt lista"
+            $szurt = Valaszt ("1", "2")
+
+            if ($szurt -eq 2)
+                {
+                    cls
+                    $title
+                    Write-Host "A(z)" $eredetiou "OU felhasználók lekérdezése`n"                
+                    $napja = Read-Host -Prompt "Az elmúlt hány nap során aktív/inaktív gépeket szeretnéd lekérdezni?`nNapok száma"
+                    $time = (Get-Date).Adddays(-($napja))
+
+                    cls
+                    $title
+                    Write-Host "A(z)" $eredetiou "felhasználók elmúlt" $napja "napjának aktivitása`n"
+                    Write-Host "Az aktív, vagy inaktív gépeket szeretnéd lekérdezni?`n(A) Ha az aktív gépeket`n(I) Ha az inaktív gépeket"
+                    $avi = Valaszt ("A", "I")
+
+                    if ($avi -eq "A")
+                        {
+                            $csvout = "D:\$ounev-Elmult-$napja-NapbanAktivFelhasznalok.csv"
+                            $ment = Get-ADUser -Filter {LastLogonTimeStamp -gt $time} -SearchBase $ou -Properties name, SamAccountName, description, LastLogon, distinguishedname | select name, description, SamAccountName, @{n='LastLogon';e={[DateTime]::FromFileTime($_.LastLogon)}}, distinguishedname
+                        }
+                    else
+                        {
+                            $csvout = "D:\$ounev-Elmult-$napja-NapbanInaktivFelhasznalok.csv"
+                            $ment = Get-ADUser -Filter {LastLogonTimeStamp -lt $time} -SearchBase $ou -Properties name, SamAccountName, description, LastLogon, distinguishedname | select name, description, SamAccountName, @{n='LastLogon';e={[DateTime]::FromFileTime($_.LastLogon)}}, distinguishedname
+                        }
+                }
+            else
+                {
+                    cls
+                    $title
+                    $csvout = "D:\$ounev-Felhasznaloi.csv"
+                    $ment = Get-ADUser -Filter * -SearchBase $ou -Properties name, SamAccountName, description, LastLogon, distinguishedname | select name, description, SamAccountName, @{n='LastLogon';e={[DateTime]::FromFileTime($_.LastLogon)}}, distinguishedname
+                }
+            CSVfunkciok $ment $csvout
+            Write-Host "`nHa más OU-t kérdeznél le, nyomd meg az R-t`nHa visszalépnél a program elejére, nyomd meg az N-t`nHa pedig kilépnél, nyomd meg a Q-t!`n"
             $kilep = Valaszt ("N", "Q", "R")
         }
     }
