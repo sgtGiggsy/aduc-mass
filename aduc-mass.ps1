@@ -152,7 +152,7 @@ else
 do
 { 
     # A kiválasztandó funkció bekérése #
-    Write-Host "Mit szeretnél lekérdezni?`n`n(1) Egy felhasználó csoporttagságait`n(2) Egy csoporthoz tartozó felhasználókat`n(3) Egy OU összes csoportjának tagjait`n(4) Egy OU X napon belül aktív/inaktív gépeit`n(5) Egy OU felhasználóinak utolsó bejelentkezésének idejét`n"
+    Write-Host "Mit szeretnél lekérdezni?`n`n(1) Egy felhasználó csoporttagságait`n(2) Egy csoporthoz tartozó felhasználókat`n(3) Egy OU összes csoportjának tagjait`n(4) Egy OU számítógépeit, akár aktivitás/inaktivitás ideje szerint szűrve`n(5) Egy OU felhasználóit, akár aktivitás/inaktivitás ideje szerint szűrve`n"
     $mit = Valaszt ("1", "2", "3", "4", "5")
 
 
@@ -415,33 +415,46 @@ do
             {
                 cls
                 $title
-                Write-Host "Egy OU X napja aktív/inaktív számítógépeinek lekérdezése`n"
+                Write-Host "Egy OU számítógépeinek lekérdezése`n"
                 $eredetiou = Read-Host -Prompt "Kérlek add meg a lekérdezni kívánt OU elérési útját!`nOU elérési út"
                 $ou = OUcheck $eredetiou
                 $ounev = OUment $ou
+
+                cls
+                $title
+                Write-Host "Csak egy általános listát kérnél le, vagy aktivitás/inaktivitás ideje szerint is szűrnéd?`n(1) Általános lista`n(2) Aktivitás/inaktivitás szerint szűrt lista"
+                $szurt = Valaszt ("1", "2")
                 
-                cls
-                $title
-                Write-Host "Az" $eredetiou "OU számítógépeinek lekérdezése`n"                
-                $napja = Read-Host -Prompt "Az elmúlt hány nap során aktív/inaktív gépeket szeretnéd lekérdezni?`nNapok száma"
-                $time = (Get-Date).Adddays(-($napja))
+                if ($szurt -eq 2)
+                {
+                    cls
+                    $title
+                    Write-Host "Az" $eredetiou "OU számítógépeinek lekérdezése`n"                
+                    $napja = Read-Host -Prompt "Az elmúlt hány nap során aktív/inaktív gépeket szeretnéd lekérdezni?`nNapok száma"
+                    $time = (Get-Date).Adddays(-($napja))
 
-                cls
-                $title
-                Write-Host "Az" $eredetiou "számítógépeinek elmúlt" $napja "napjának aktivitása`n"
-                Write-Host "Az aktív, vagy inaktív gépeket szeretnéd lekérdezni?`n(A) Ha az aktív gépeket`n(I) Ha az inaktív gépeket"
-                $avi = Valaszt ("A", "I")
+                    cls
+                    $title
+                    Write-Host "Az" $eredetiou "számítógépeinek elmúlt" $napja "napjának aktivitása`n"
+                    Write-Host "Az aktív, vagy inaktív gépeket szeretnéd lekérdezni?`n(A) Ha az aktív gépeket`n(I) Ha az inaktív gépeket"
+                    $avi = Valaszt ("A", "I")
 
-                if ($avi -eq "A")
-                    {
-                        $csvout = "D:\$ounev-Elmult-$napja-NapbanAktivGepek.csv"
-                        $ment = Get-ADComputer -Filter {LastLogonTimeStamp -gt $time} -SearchBase $ou -Properties LastLogonDate, OperatingSystem | select name, LastLogonDate, OperatingSystem
-                    }
+                    if ($avi -eq "A")
+                        {
+                            $csvout = "D:\$ounev-Elmult-$napja-NapbanAktivGepek.csv"
+                            $ment = Get-ADComputer -Filter {LastLogonTimeStamp -gt $time} -SearchBase $ou -Properties LastLogonDate, OperatingSystem | select name, LastLogonDate, OperatingSystem
+                        }
+                    else
+                        {
+                            $csvout = "D:\$ounev-Elmult-$napja-NapbanInaktivGepek.csv"
+                            $ment = Get-ADComputer -Filter {LastLogonTimeStamp -lt $time} -SearchBase $ou -Properties LastLogonDate, OperatingSystem | select name, LastLogonDate, OperatingSystem
+                        }
+                }
                 else
-                    {
-                        $csvout = "D:\$ounev-Elmult-$napja-NapbanInaktivGepek.csv"
-                        $ment = Get-ADComputer -Filter {LastLogonTimeStamp -lt $time} -SearchBase $ou -Properties LastLogonDate, OperatingSystem | select name, LastLogonDate, OperatingSystem
-                    }
+                {
+                    $csvout = "D:\$ounev-Szamitogepei.csv"
+                    $ment = Get-ADComputer -SearchBase $ou -Properties LastLogonDate, OperatingSystem | select name, LastLogonDate, OperatingSystem
+                }
                 CSVfunkciok $ment $csvout
                 Write-Host "`nHa más OU-t kérdeznél le, nyomd meg az R-t`nHa visszalépnél a program elejére, nyomd meg az N-t`nHa pedig kilépnél, nyomd meg a Q-t!`n"                
                 $kilep = Valaszt ("N", "Q", "R")
@@ -449,6 +462,14 @@ do
         }
     5
         {
+            cls
+            $title
+            Write-Host "Egy OU felhasználóinak lekérdezése`n"
+            $eredetiou = Read-Host -Prompt "Kérlek add meg a lekérdezni kívánt OU elérési útját!`nOU elérési út"
+            $ou = OUcheck $eredetiou
+            $ounev = OUment $ou
+
+            $ment = Get-ADUser -filter * -SearchBase $ou -Properties name, SamAccountName, description, LastLogon, distinguishedname | select name, description, SamAccountName, @{n='LastLogon';e={[DateTime]::FromFileTime($_.LastLogon)}}, distinguishedname
             Write-Host "Ez a funkció még nincs kész"
             $kilep = Valaszt ("N", "Q", "R")
         }
