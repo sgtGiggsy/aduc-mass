@@ -436,10 +436,10 @@ do
                     cls
                     $title
                     Write-Host "A(z)" $eredetiou "számítógépek elmúlt" $napja "napjának aktivitása`n"
-                    Write-Host "Az aktív, vagy inaktív gépeket szeretnéd lekérdezni?`n(A) Ha az aktív gépeket`n(I) Ha az inaktív gépeket"
-                    $avi = Valaszt ("A", "I")
+                    Write-Host "Az aktív, vagy inaktív gépeket szeretnéd lekérdezni?`n(1) Ha az aktív gépeket`n(2) Ha az inaktív gépeket"
+                    $avi = Valaszt ("1", "2")
 
-                    if ($avi -eq "A")
+                    if ($avi -eq "1")
                         {
                             $csvout = "D:\$ounev-Elmult-$napja-NapbanAktivGepek.csv"
                             $ment = Get-ADComputer -Filter {LastLogonTimeStamp -gt $time} -SearchBase $ou -Properties LastLogonDate, OperatingSystem | select name, LastLogonDate, OperatingSystem
@@ -487,10 +487,10 @@ do
                     cls
                     $title
                     Write-Host "A(z)" $eredetiou "felhasználók elmúlt" $napja "napjának aktivitása`n"
-                    Write-Host "Az aktív, vagy inaktív gépeket szeretnéd lekérdezni?`n(A) Ha az aktív gépeket`n(I) Ha az inaktív gépeket"
-                    $avi = Valaszt ("A", "I")
+                    Write-Host "Az aktív, vagy inaktív gépeket szeretnéd lekérdezni?`n(1) Ha az aktív gépeket`n(2) Ha az inaktív gépeket"
+                    $avi = Valaszt ("1", "2")
 
-                    if ($avi -eq "A")
+                    if ($avi -eq "1")
                         {
                             $csvout = "D:\$ounev-Elmult-$napja-NapbanAktivFelhasznalok.csv"
                             $ment = Get-ADUser -Filter {LastLogonTimeStamp -gt $time} -SearchBase $ou -Properties name, SamAccountName, description, LastLogon, distinguishedname | select name, description, SamAccountName, @{n='LastLogon';e={[DateTime]::FromFileTime($_.LastLogon)}}, distinguishedname
