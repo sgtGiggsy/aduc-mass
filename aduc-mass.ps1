@@ -1,4 +1,5 @@
 ﻿### Nyelv ###
+$lang_ad_module_not_installed = "!!! Az Active Directory modul nincs telepítve. A program funkciói így működésképtelenek !!!`nKilépés"
 $lang_choose = "Válassz"
 $lang_choose_err = "Kérlek, csak a megadott lehetőségek közül válassz!"
 $lang_file_not_created = "Valami hiba történt, a fájl nem jött létre!"
@@ -232,6 +233,13 @@ function CSVdir
 
 ####### Program belépési pont ########
 
+if (!(Get-Module -ListAvailable -Name ADModule)) 
+    {
+        Write-Host $lang_ad_module_not_installed -ForegroundColor Red
+        Read-Host
+        break
+    } 
+
 # Program címsor
 $title = $lang_title_admin
 
@@ -241,8 +249,8 @@ if (($admine.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) -
     {
         cls
         $title = $lang_title_user
-        Write-Host $title -ForegroundColor Red
-        Write-Host $lang_warn_not_admin -ForegroundColor Red
+        Write-Host $title -ForegroundColor Yellow
+        Write-Host $lang_warn_not_admin -ForegroundColor Yellow
         Write-Host $lang_warn_wont_work
         Read-Host -Prompt $lang_warn_run_anyway
     }
