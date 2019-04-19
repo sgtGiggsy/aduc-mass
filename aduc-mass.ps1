@@ -1,8 +1,10 @@
 ﻿### Nyelv ###
-$lang_ad_module_not_installed = "!!! Az Active Directory modul nincs telepítve. A program funkciói így működésképtelenek !!!`nKilépés"
+$lang_ad_module_not_installed = "!!! Az Active Directory modul nincs telepítve. A program funkciói így működésképtelenek !!!`n`n! A program leáll !"
 $lang_choose = "Válassz"
 $lang_choose_err = "Kérlek, csak a megadott lehetőségek közül válassz!"
 $lang_file_not_created = "Valami hiba történt, a fájl nem jött létre!"
+$lang_old_path = "A fájlok mentésének jelenlegi elérési útja:"
+$lang_new_path = "Kérlek add meg az új elérési utat!`nÚj elérési út"
 $lang_object_not_consist = "Az objektum nem tartalmaz tagokat"
 $lang_file_is_created = "A fájl létrejött. Helye:"
 $lang_id_not_exist = "A megadott azonosító nem létezik"
@@ -11,21 +13,20 @@ $lang_non_existent_ou = "Nem létező OU-t adtál meg"
 $lang_enter_ou = "Kérlek add meg a lekérdezni kívánt OU elérési útját!`nElérési út"
 $lang_title_admin = "AD Felhasználók és Csoportok - Adminisztrátori mód`n"
 $lang_title_user = "AD Felhasználók és Csoportok - Felhasználói mód`n"
-$lang_warn_not_admin = "FIGYELEM!!!`nNem admin jogokkal futtatod a programot!`n"
-$lang_warn_wont_work = "Bizonyos funkciók így is működni fognak, de csoportok illetve felhasználók módosítására nem lesz jogosultságod."
-$lang_warn_run_anyway = "`nHa ennek ellenére is futtatnád a programot, üss Entert"
-$lang_main_menu = "Mit szeretnél lekérdezni?`n`n(1) Egy csoporthoz tartozó felhasználókat`n(2) Egy felhasználó csoporttagságait`n(3) Egy OU összes csoportjának tagjait`n(4) Egy OU összes felhasználójának csoporttagságait`n(5) Egy OU számítógépeit, akár aktivitás/inaktivitás ideje szerint szűrve`n(6) Egy OU felhasználóit, akár aktivitás/inaktivitás ideje szerint szűrve"
+$lang_warn_not_admin = "FIGYELEM!!!`nNem admin jogokkal futtatod a programot!`nBizonyos funkciók így is működni fognak, de csoportok illetve felhasználók módosítására nem lesz jogosultságod.`n`nHa ennek ellenére is futtatnád a programot, üss Entert"
+$lang_main_menu = "Mit szeretnél tenni?`n`n(1) Egy csoporthoz tartozó felhasználók lekérdezése`n(2) Egy felhasználó csoporttagságainak lekérdezése`n(3) Egy OU összes csoportjának tagjainak lekérdezése`n(4) Egy OU összes felhasználójának csoporttagságainak lekérdezése`n(5) Egy OU számítógépeinek lekérdezése, akár aktivitás/inaktivitás ideje szerint szűrve`n(6) Egy OU felhasználóinak lekérdezése, akár aktivitás/inaktivitás ideje szerint szűrve`n(S) A program gyökérkönyvtárának megváltoztatása"
 $lang_enter_group_name = "Kérlek add meg a lekérdezni kívánt csoport nevét!`nCsoportnév"
 $lang_i_found = "Megtaláltam a"
 $lang_the_group = "csoportot`n"
-$lang_found_group = "Csak kiiratni szeretnéd az eredményt, fájlba menteni, vagy egy másik csoporthoz hozzáadni ennek tagjait?`n`n(1) Ha kiíratnád`n(2) Ha fájlba mentetnéd`n(3) Ha másik csoporthoz adnád a tagokat"
+$lang_group_whats_next_admin = "Csak kiiratni szeretnéd az eredményt, fájlba menteni, vagy egy másik csoporthoz hozzáadni ennek tagjait?`n`n(1) Ha kiíratnád`n(2) Ha fájlba mentetnéd`n(3) Ha másik csoporthoz adnád a tagokat"
+$lang_group_whats_next_user = "Csak kiiratni szeretnéd az eredményt, vagy fájlba is mentenéd?`n`n(1) Ha kiíratnád`n(2) Ha fájlba mentetnéd"
 $lang_name = "Név"
 $lang_description = "Rendfokozat"
 $lang_username = "Felhasználónév"
 $lang_groups = "Csoportok"
 $lang_group_whats_next = "(M) Ha más folyamatot szeretnél futtatni ugyanezzel a forrás csoporttal`n(U) Ha új csoportot szeretnél lekérdezni`n(N) Ha visszalépnél a program elejére`n(Q) Ha kilépnél"
 $lang_group_members_copy = "csoport tagjainak másolása"
-$lang_enter_target_group = "Kérlek, add meg a csoport nevét, amihez hozzá szeretnéd adni a tagokat!"
+$lang_enter_target_group = "Kérlek, add meg a csoport nevét, amihez hozzá szeretnéd adni a tagokat!`nCsoportnév"
 $lang_to_group = "csoporthoz."
 $lang_copy_of = "másolása"
 $lang_task_unsuccesful = "`nA feladat végrehajtása sikertelen!`n"
@@ -35,7 +36,9 @@ $lang_task_fully_succesful = "A feladat hibák nélkül futott le."
 $lang_copy_groups_whats_next = "(R) Ha hozzá akarnál adni valaki mást is ugyanezekhez a csoportokhoz`n(M) Ha más folyamatot szeretnél futtatni ugyanezzel a forrás csoporttal`n(U) Ha új csoportot szeretnél lekérdezni`n(N) Ha visszalépnél a program elejére`n(Q) Ha kilépnél"
 $lang_enter_username = "Kérlek add meg a lekérdezni kívánt felhasználó bejelentkezési nevét!`nAzonosító"
 $lang_the_user = "felhasználót, bejelentkezési neve:"
-$lang_user_whats_next = "Csak kiiratni szeretnéd az eredményt, fájlba menteni, vagy átmásolnád a csoporttagságait egy másik felhasználóhoz?`n(1) Ha kiíratnád`n(2) Ha fájlba mentetnéd`n(3) Ha más felhasználóhoz másolnád"
+$lang_user_whats_next_admin = "Csak kiiratni szeretnéd az eredményt, fájlba menteni, vagy átmásolnád a csoporttagságait egy másik felhasználóhoz?`n(1) Ha kiíratnád`n(2) Ha fájlba mentetnéd`n(3) Ha más felhasználóhoz másolnád"
+$lang_user_whats_next_user = "Csak kiiratni szeretnéd az eredményt vagy fájlba menteni?`n(1) Ha kiíratnád`n(2) Ha fájlba mentetnéd"
+$lang_user_whats_next = "(M) Ha más folyamatot szeretnél futtatni ugyanezzel a forrás felhasználóval`n(U) Ha új felhasználót szeretnél lekérdezni`n(N) Ha visszalépnél a program elejére`n(Q) Ha kilépnél"
 $lang_users = "Felhasználók"
 $lang_group_name = "Csoportnév"
 $lang_s_rights = "jogai"
@@ -77,31 +80,35 @@ $lang_users_last = "felhasználók elmúlt"
 $lang_days_active_users = "NapbanAktivFelhasznalok"
 $lang_days_inactive_users = "NapbanInaktivFelhasznalok"
 $lang_users_of = "Felhasználói"
+$lang_directory_cant_be_created = "Figyelem! A mappa létrehozása nem sikerült"
+$lang_folder_not_exist = "A megadott mappa nem létezik. Szeretnéd, hogy létrehozzam?`n(1) Igen`n(2) Nem"
+$lang_new_or_exit = "Megadsz egy új elérési utat, vagy inkább kilépnél, és használnád az eredeti útvonalat?`n(1) Új elérési út`n(2) Maradjunk az eredetinél"
 
 ### Functions ###
+
+## Function to translate the traditional Domain/Organizational Unit form into the DistinguishedName that's needed to filter queries on a certain OU
 function OUnevfordito
 {
-    param($bemenet)
-    $kimenet = $bemenet.Split("/")
+    param($bemenet) #OU name in the form you can find it in ADUC
+    $kimenet = $bemenet.Split("/") #Splitting the OU name by slash characters
     
-    for ($i = $kimenet.Length-1; $i -gt -1; $i--)
+    for ($i = $kimenet.Length-1; $i -gt -1; $i--) #Loop starts from the last section of the string array to put them to the front
     {
-        if ($i -ne 0)
+        if ($i -ne 0) #Do the conversion until we get to the DC part
         {
-            if ($i -eq $kimenet.Length-1)
+            if ($i -eq $kimenet.Length-1) # This conditional is used to get the OU name from the whole path, so we can use it as as folder, or filename
             {
-                $ounev = $kimenet[$i]
+                $Script:ounev = $kimenet[$i]
             }
             $forditott += "OU="+ $kimenet[$i]+","
         }
-        else 
+        else #Here's where we turn DC name into DistinguishedName format too
         {
             $dcnevold = $kimenet[$i]
             $dcnevtemp = $dcnevold.Split(".")
-          #  $dcnevtemp
             for ($j = 0; $j -lt $dcnevtemp.Length; $j++)
             {
-                if ($j -lt $dcnevtemp.Length-1)
+                if ($j -lt $dcnevtemp.Length-1) #It's needed so there won't be a comma at the end of the output
                     {
                         $dcnev += "DC="+$dcnevtemp[$j]+","
                     }
@@ -113,38 +120,32 @@ function OUnevfordito
             $forditott += $dcnev
         }
     }    
-    return $forditott
+    return $forditott #OU name in DistinguishedName form
 }
 
-function OUment
-{
-    param($bemenet)
-    $kimenet = $bemenet.Split(",OU=")
-    return $kimenet[3]
-}
-
+## This function is responsible to check if users entered one of the allowed choices
 function Valaszt
 {
-    param($choice)
+    param($choice) # It receives an array of the possible choices, it's not fixed, so it doesn't matter if we have 2 allowed choices, or 30
     $probalkozottmar = $false
     do
     {        
-        if ($probalkozottmar -eq $false)
+        if ($probalkozottmar -eq $false) # Here the user enters their choice, if it's their first try
         {
             $valasztas = Read-Host -Prompt $lang_choose
         }
         else
         {
-            Write-Host "`n`n"$lang_choose_err -ForegroundColor Yellow
+            Write-Host "`n`n$lang_choose_err" -ForegroundColor Yellow # This is the error message, the user gets here after every single bad entry
             $valasztas = Read-Host -Prompt $lang_choose
         }
         $teszt = $false
-        for ($i=0; $i -lt $choice.Length; $i++)
+        for ($i=0; $i -lt $choice.Length; $i++) # This loop checks if the user entered an allowed value
         {
             if ($valasztas -eq $choice[$i])
             {
                 $teszt = $true
-                break
+                break # To get out of the loop if there's a match
             }
             $probalkozottmar = $true
         }
@@ -152,11 +153,12 @@ function Valaszt
     return $valasztas
 }
 
+# This function handles the saving into csv. While save into csv is a basic function in PowerShell, it adds a little more functionality to it
 function CSVfunkciok
 {
-    param ($bemenet, $csvout, [bool]$noout)
+    param ($bemenet, $csvout, [bool]$noout) # The first variable is the output from the pipeline, the second is the path and name we want to save our csv as, and the third is a boolean argument, that we have to set to true, if we don't want output on the console
 
-    if ($null -ne $bemenet)
+    if ($null -ne $bemenet) # This checks if there is actual output from the pipeline
     {
         try
         {
@@ -166,25 +168,26 @@ function CSVfunkciok
         {
             if ($noout -eq $false)
             {
-                Write-Host "`n"$lang_file_not_created -ForegroundColor Red
+                Write-Host "`n$lang_file_not_created" -ForegroundColor Red # Warning if the file can't be created
             }        
         }
     }
     else
     {
-        $lang_object_not_consist | Set-Content $csvout
+        $lang_object_not_consist | Set-Content $csvout # This writes a default value in created csvs if the pipeline was empty
     }
 
-    if(Test-Path -Path $csvout)
+    if(Test-Path -Path $csvout) # This tests if the file exist, notifies the user about it, and puts the separator part at the first line, in case csvs with comma separators aren't automatically recognized by Excell as spreadheets
         {
             if ($noout -eq $false)
             {
-                Write-Host "`n" $lang_file_is_created $csvout -ForegroundColor Green
+                Write-Host "`n$lang_file_is_created" $csvout -ForegroundColor Green
             }
-                "sep=,`n"+(Get-Content $csvout -Raw) | Set-Content $csvout            
+            "sep=,`n"+(Get-Content $csvout -Raw) | Set-Content $csvout            
         }
 }
 
+## This function checks if the identifier, the user entered is exist, and asks them to enter it again, if not.
 function Letezike 
 {
     param ($obj)
@@ -192,22 +195,23 @@ function Letezike
     {
         if (!(dsquery user -samid $obj) -and !(dsquery group -samid $obj))
             {                
-                Write-Host "`n"$lang_id_not_exist "`n" -ForegroundColor Red
+                Write-Host "`n$lang_id_not_exist" "`n" -ForegroundColor Red
                 $obj = Read-Host -Prompt $lang_reenter_id
             }
     } while (!(dsquery user -samid $obj) -and !(dsquery group -samid $obj))
     return $obj
 }
 
+## This function checks if the OU the user entered, exist.
 function OUcheck
 {
     param ($eredetiou)
     $ouletezik = $false
     do 
     {
-        try
+        try # It gets the value from the main part of the program, sends it to the ou-distinguishedname interpreter, then checks if it exist. If not, it asks the user to enter the value again
         {            
-            $ou = OUnevfordito $eredetiou
+            $ou = OUnevfordito $eredetiou 
             Get-ADOrganizationalUnit -Identity $ou | Out-Null
             $ouletezik = $true
         }
@@ -221,29 +225,39 @@ function OUcheck
     return $ou
 }
 
+## This function is responsible of creating the directories where we'll save csv files.
+## First it checks if the directory exist, then if it's not, it creates it. If it's not possible, it notifies the user about it.
 function CSVdir
 {
     param ($csvdir)
-    if(!(Test-Path -Path $csvdir))
+   
+    $csvpath = "$script:path\$csvdir"
+    if(!(Test-Path -Path $csvpath))
     {
-        New-Item -ItemType directory -Path $csvdir | Out-Null
-    }    
+        try 
+        {
+            New-Item -ItemType directory -Path $csvpath | Out-Null    
+        }
+        catch
+        {
+            Write-Host $lang_directory_cant_be_created -ForegroundColor Red    
+        }
+    }
+    return $csvpath
 }
 
 
-####### Program belépési pont ########
+####### Program entry point ########
 
-if (!(Get-Module -ListAvailable -Name ADModule)) 
+# First check. It doesn't let the user continue, if they doesn't have ActiveDirectory module installed. As the program heavily relies on AD module, it makes no sense to try it without that.
+if ((Get-Module -ListAvailable -Name ActiveDirectory)) 
     {
         Write-Host $lang_ad_module_not_installed -ForegroundColor Red
         Read-Host
         break
     } 
 
-# Program címsor
-$title = $lang_title_admin
-
-# Administrator jogok ellenőrzése - Ha a felhasználó admin, a normál $title van használva, ha nem admin, sárga színű, és figyelmeztetést kap
+# Second check. It warns the user if they try to run the program with user level rights. Most functions work without admin rights, but it still worth to notify the user about it.
 $admine = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
 if (($admine.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) -eq $false)
     {
@@ -251,82 +265,88 @@ if (($admine.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) -
         $title = $lang_title_user
         Write-Host $title -ForegroundColor Yellow
         Write-Host $lang_warn_not_admin -ForegroundColor Yellow
-        Write-Host $lang_warn_wont_work
-        Read-Host -Prompt $lang_warn_run_anyway
+        $admin = $false
+        Read-Host
     }
 else 
     {
+        $title = $lang_title_admin
+        $admin = $true
         $title
     }
+$script:path = "D:\AD-Out" # The root of the default save path for csvs.
 
-# A program törzsének loopja, ezen belül helyezkedik el az összes lekérdezés
+# The main loop of the program. The user won't leave this from now, until they close the program. #
 do
 { 
-    # A kiválasztandó funkció bekérése #
+    # Choose from the given options #
     cls
     $title
     Write-Host $lang_main_menu
-    $mit = Valaszt ("1", "2", "3", "4", "5", "6")
+    $mit = Valaszt ("1", "2", "3", "4", "5", "6", "S")
 
-
-    # A felhasználóval kapcsolatos műveletek #
     cls
     switch ($mit)
     {
-    1 # Csoportokkal kapcsolatos műveletek #
+    1 # Actions on a single group. Get users, write them on the host, save them into a csv, or copy its users to another group #
         {
-            # A csoportokkal kapcsolatos műveletek loopja, ebben helyezkedik el MINDEN csoporttal kapcsolatos művelet, az egy OU összes csoportjának lekérdezésén kívül. Az első loop a csoport nevének megadása ELŐTT kezdődik #
-            do
+            do # The main loop of this menu #
             {
             cls
             $title
             $csopnev = Read-Host -Prompt $lang_enter_group_name
-            $csopnev = Letezike $csopnev            
+            $csopnev = Letezike $csopnev # It calls the function to check if the entered groupname exist
 
-                # Ez a csoport nevének megadását követően induló loop. Ide akkor térünk vissza, ha a felhasználó ugyanezzel a csoporttal akar más műveletet végezni. #
+                # Second loop in this program. We get here if we want to do different tasks with the group #
                 do
-                {
-                    # A rendszergazda ellenőrzött megkérdezése az adatokkal elvégzendő műveletről #   
+                {                       
                     cls
                     $title
                     Write-Host $lang_i_found $csopnev $lang_the_group -ForegroundColor Green
-                    Write-Host $lang_found_group
-                    $kiir = Valaszt ("1", "2", "3")
+                    if ($admin) # As we probably don't want users to modify groups, most likely they don't even have rights to do so, we won't even show the option to them
+                    {
+                        Write-Host $lang_group_whats_next_admin
+                        $kiir = Valaszt ("1", "2", "3")
+                    }
+                    else
+                    {
+                        Write-Host $lang_group_whats_next_user
+                        $kiir = Valaszt ("1", "2", "3")
+                    }
 
                     switch ($kiir)
                         {
-                            1 # Csoport tagjainak kiírása #
+                            1 # Write users of the group on console #
                                 {
                                     Get-ADGroupMember -identity $csopnev | Get-ADObject -Properties description, samAccountName | select @{n=$lang_name; e='name'}, @{n=$lang_description; e='description'}, @{n=$lang_username; e='samAccountName'} | Out-String
                                     Write-Host $lang_group_whats_next
                                     $kilep = Valaszt ("M", "N", "U", "Q")
                                 }
-                            2 # Csoport taglistájának fájlba mentése #
+                            2 # Save users of the group in a csv #
                                 {
-                                    $csvdir = "D:\AD-Out\$lang_groups"
-                                    CSVdir $csvdir
+                                    $csvdir = $lang_groups
+                                    $csvdir = CSVdir $csvdir
 
                                     $csvout = "$csvdir\$csopnev.csv"
                                     $ment = Get-ADGroupMember -identity $csopnev | Get-ADObject -Properties description, samAccountName | select @{n=$lang_name; e='name'}, @{n=$lang_description; e='description'}, @{n=$lang_username; e='samAccountName'}
                                     CSVfunkciok $ment $csvout
                                     
-                                    Write-Host $lang_group_whats_next
+                                    Write-Host "`n$lang_group_whats_next"
                                     $kilep = Valaszt ("M", "N", "U", "Q")
                                 }
-                            3 # Csoport tagjainak hozzáadása másik csoporthoz #
+                            3 # Add users to another group #
                                 {
-                                    # Legbelső loop, ide akkor térünk vissza, ha a felhasználó ugyanennek a csoportnak a tagjait még más egyéb csoportokhoz is hozzá akarja adni #
+                                    # Inner loop. We repeat this, if we want to add the contents of the group to another group #
                                     do
                                     {
                                         $kitol = Get-ADGroup $csopnev                                        
                                         cls
                                         $title
-                                        Write-Host $kitol.name $lang_group_members_copy
-                                        # A célcsoport nevének ellenőrzött bekérése #
+                                        Write-Host $kitol.name $lang_group_members_copy"`n"
                                         $newgroup = Read-Host -Prompt $lang_enter_target_group
                                         $newgroup = Letezike $newgroup
 
-                                        # A tagok csoporthoz adásának folyamata #
+                                        # The process of adding the members to the other group #
                                         [array]$members = Get-ADGroupMember $csopnev;
                                         $kihez = Get-ADGroup $newgroup                    
                                         cls
@@ -337,7 +357,7 @@ do
 
                                         for ($i=0; $i -lt $elemszam; $i++)
                                             {
-                                                # Hibák elkapása #
+                                                # Catch exceptions #
                                                 try
                                                 {
                                                     Add-ADGroupMember -Identity $newgroup -Members $members[$i]
@@ -345,30 +365,28 @@ do
                                                 }
                                                 catch
                                                 {                                    
-                                                    $hiba = @($newgroup)
-                                                }
-
-                                                # Ablak bezáródás előtt a rendszergazda értesítése a folyamat eredményéről #
-                                                if ($i -eq $elemszam-1)
-                                                {
-                                                    # Kigyűjtött hibák kiírása #                                    
-                                                    if ($hiba.Count -gt 0)
-                                                        {
-                                                        cls
-                                                        $title
-                                                        Write-Host $lang_task_unsuccesful -ForegroundColor Red
-                                                        Write-Host $lang_you_have_no_rights $hiba $lang_to_modify_group -ForegroundColor Red
-                                                    }
-                                                    else
-                                                    {
-                                                        cls
-                                                        $title
-                                                        Write-Host $lang_task_fully_succesful -ForegroundColor Green
-                                                    }
-                                                    Write-Host $lang_copy_groups_whats_next
-                                                    $kilep = Valaszt ("M", "N", "Q", "R", "U")
+                                                    $hiba = $true
+                                                    break # If we can't add people to the group, it makes no sense trying with all of them, so we jump out of the loop
                                                 }
                                             }
+                                            # After the process is finished, notify the user of the unsuccesful task.
+                                            # As we tried to modify only one group, we were able to either add all users, or none
+                                            # Output in the case of an unsuccesful task #                                    
+                                            if ($hiba -eq $true)
+                                            {
+                                                cls
+                                                $title
+                                                Write-Host $lang_task_unsuccesful -ForegroundColor Red
+                                                Write-Host $lang_you_have_no_rights $kihez.Name $lang_to_modify_group -ForegroundColor Red
+                                                }
+                                            else
+                                            {
+                                                cls
+                                                $title
+                                                Write-Host $lang_task_fully_succesful -ForegroundColor Green
+                                            }
+                                            Write-Host "`n"r$lang_copy_groups_whats_next
+                                            $kilep = Valaszt ("M", "N", "Q", "R", "U")                                            
                                     } while ($kilep -eq "R")                    
                                 }
                         }
@@ -376,68 +394,68 @@ do
             } while ($kilep -eq "U")
         }
 
-    2 # Egy felhasználó csoporttagságainak lekérdezése #
-        {
-            # A felhasználókkal kapcsolatos folyamatok loopja. Ide térünk vissza, ha a folyamat végén az app használója újra felhasználókkal kapcsolatos folyamatot szeretne futtatni.
-            do
+    2 # Actions on a single user. Get ugroup memberships, write them on the host, save them into a csv, or copy them to another user #
+        {            
+            do # The main loop of this menu #
             {
                 cls
                 $title
-                # A felhasználó nevének ellenőrzött bekérése #
                 $username = Read-Host -Prompt $lang_enter_username
-                $username = Letezike $username
-
-                # A folyamat ugyanezen felhasználó adatain történő megismétlésének loopja. #
-                do
-                {
-                    # A rendszergazda ellenőrzött megkérdezése az adatokkal elvégzendő műveletről #                
+                $username = Letezike $username # It calls the function to check if the entered username exist
+                
+                do # Second loop in this program. We get here if we want to do different tasks with the user #
+                {          
                     cls
                     $title
                     $kitol = Get-ADUser $username 
                     Write-Host $lang_i_found $kitol.name $lang_the_user $username"`n" -ForegroundColor Green
-                    Write-Host $lang_user_whats_next
-                    $kiir = Valaszt ("1", "2", "3")
+                    if ($admin) # As we probably don't want users to modify groups, most likely they don't even have rights to do so, we won't even show the option to them
+                    {
+                        Write-Host $lang_user_whats_next_admin
+                        $kiir = Valaszt ("1", "2", "3")
+                    }
+                    else
+                    {
+                        Write-Host $lang_user_whats_next_user
+                        $kiir = Valaszt ("1", "2", "3")
+                    }
 
                     switch ($kiir)
                     {
-                        1 # Csoporttagságok kíírása #
+                        1 # Write group memberships on the console #
                             {
                                 cls
                                 $title
                                 Get-ADPrincipalGroupMembership $username | select  @{n=$lang_group_name; e='name'}  | Out-String
-                                # Az eredmény konzolra kiírása után a felhasználótól a következő lépés bekérése #
-                                Write-Host $lang_user_whats_next
+                                Write-Host "`n$lang_user_whats_next"
                                 $kilep = Valaszt ("M", "N", "U", "Q")
                             }
-                        2 # Csoporttagságok fájlba mentése #
+                        2 # Saving group memberships in a file #
                             {
-                                $csvdir = "D:\AD-Out\$lang_users"
-                                CSVdir $csvdir
+                                $csvdir = $lang_users
+                                $csvdir = CSVdir $csvdir
 
                                 $csvout = "$csvdir\$username-$lang_s_rights.csv"
                                 $ment = Get-ADPrincipalGroupMembership $username | select @{n=$lang_group_name; e='name'}
                                 CSVfunkciok $ment $csvout                                
 
-                                # Az eredmény konzolra kiírását követően a felhasználótól a következő lépés bekérése #
-                                Write-Host $lang_user_whats_next
+                                Write-Host "`n$lang_user_whats_next"
                                 $kilep = Valaszt ("M", "N", "U", "Q")
                             }
-                        3 # Csoporttagságok felhasználóhoz másolása #
+                        3 # Copying group memberships to another user #
                             {
-                                # A bekért felhasználó több felhasználóhoz másolásának loopja. Ha egy másolás után az app használója úgy dönt, hogy más felhasználóhoz is bemásolná ugyanezeket a tagságokat, ide térünk vissza #
+                                # Inner loop. We get back here if the user of the program wants to copy source user's memberships to another user #
                                 do 
                                 {
-                                    # A célfelhasználó adatainak ellenőrzött bekérése #
                                     cls
                                     $title          
                                     Write-Host $kitol.Name $lang_users_groups_copy
                                     $newuser = Read-Host -Prompt $lang_enter_target_user
                                     $newuser = Letezike $newuser
                                     
-                                    # A csoporttagságok másolásának folyamata #
+                                    # A The process of copying memberships #
                                     [array]$csopnevek = Get-ADPrincipalGroupMembership $username;
                                     $kihez = Get-ADUser $newuser
-
                                     $elemszam = $csopnevek.Count
 
                                     cls
@@ -445,7 +463,7 @@ do
                                     Write-Host $kitol.Name $lang_users_groups_copy $kihez.Name $lang_to_user
                                     for ($i=0; $i -lt $elemszam; $i++)
                                         {
-                                            # Hibák elkapása - Van-e jog a csoportokhoz való hozzáadáshoz #
+                                            # Catch exceptions. It won't show them here, but collected at the end of the process #
                                             try
                                                 {
                                                     Add-ADGroupMember -Identity $csopnevek[$i] -Members $newuser
@@ -455,43 +473,42 @@ do
                                                 {                                    
                                                     $hiba += @($csopnevek[$i].SamAccountName)
                                                 }
+                                        }
 
-                                            # Ablak bezáródás előtt a rendszergazda értesítése a folyamat eredményéről #
-                                            if ($i -eq $elemszam-1)
-                                                {
-                                                    # Kigyűjtött hibák kiírása #
-                                                    if ($hiba.Count -gt 0)
+                                        # After the task is finished notifying the user of the results.
+                                        # As here we tried to modify several groups, the result can be unsuccesful, partially succesful, and fully succesful.
+                                        # We handle all these in the following conditionals
+                                        if ($hiba.Count -gt 0)
+                                        {
+                                            if ($hiba.Count -eq $elemszam) # In case of an unsuccesful task
+                                            {
+                                                cls
+                                                $title
+                                                Write-Host $lang_have_no_rights_to_modify_groups -ForegroundColor Red
+                                            }
+                                            else  # In case of a partially succesful task. We'll write the collected unsuccesful processes here
+                                            {
+                                                cls
+                                                $sikeres = $elemszam-$hiba.Count
+                                                $title
+                                                Write-Host $lang_task_ended_with_mistakes -ForegroundColor Yellow
+                                                for ($j=0; $j -lt $hiba.Count; $j++)
                                                     {
-                                                        if ($hiba.Count -eq $elemszam)
-                                                        {
-                                                            cls
-                                                            $title
-                                                            Write-Host $lang_have_no_rights_to_modify_groups -ForegroundColor Red
-                                                        }
-                                                        else {                                            
-                                                            cls
-                                                            $sikeres = $elemszam-$hiba.Count
-                                                            $title
-                                                            Write-Host $lang_task_ended_with_mistakes -ForegroundColor Yellow
-                                                            for ($j=0; $j -lt $hiba.Count; $j++)
-                                                                {
-                                                                    Write-Host $lang_you_have_no_rights $hiba[$j] $lang_to_modify_group -ForegroundColor Yellow                                                    
-                                                                }
-                                                            Write-Host $kihez.Name $lang_user_added $sikeres $lang_to_group_of $elemszam $lang_of_groups -ForegroundColor Yellow
-                                                            }
-                                                        }
-                                                    # Üzenet hibátlan eredmény esetén #
-                                                    else
-                                                        {
-                                                            cls
-                                                            $title
-                                                            Write-Host $lang_task_fully_succesful -ForegroundColor Green
-                                                        }
-                                                    # Felhasználó megkérdezése a folyamat lefutását követő teendőkről #
-                                                    Write-Host $lang_copy_users_whats_next
-                                                    $kilep = Valaszt ("R", "M", "N", "Q", "U")
-                                                }
-                                        }                                        
+                                                        Write-Host $lang_you_have_no_rights $hiba[$j] $lang_to_modify_group -ForegroundColor Yellow                                                    
+                                                    }
+                                                # A notification about the number of succesful copies
+                                                Write-Host $kihez.Name $lang_user_added $sikeres $lang_to_group_of $elemszam $lang_of_groups -ForegroundColor Yellow
+                                            }
+                                        }
+                                        # Best case scenario, notification in case of a fully succesful task #
+                                        else
+                                        {
+                                            cls
+                                            $title
+                                            Write-Host $lang_task_fully_succesful -ForegroundColor Green
+                                        }
+                                        Write-Host $lang_copy_users_whats_next
+                                        $kilep = Valaszt ("R", "M", "N", "Q", "U")                                                                                
                                 } while ($kilep -eq "R")                                
                             }
                     }
@@ -499,7 +516,7 @@ do
             } while ($kilep -eq "U")
         }
 
-    3 # Egy OU összes csoportjának tagjai #
+    3 # All members of all groups from a certain OU, collected in separate csvs #
         {
             do
             {
@@ -509,13 +526,13 @@ do
                 {
                     Write-Host $lang_all_groups_of_ou
                     $eredetiou = Read-Host -Prompt $lang_enter_ou
-                    $ou = OUcheck $eredetiou
-                    $ounev = OUment $ou
+                    $ou = OUcheck $eredetiou # It calls the function to check if the entered OU exist
+                    $ounev = $Script:ounev # It calls the $script:ounev variable from OUcheck function, so we could create separate folders by OUs
                 
                     $vane = $true
                     [array]$csopnevek = Get-ADGroup -SearchBase $ou -Filter *
 
-                    if($csopnevek.Length -eq 0)
+                    if($csopnevek.Length -eq 0) # This conditional checks if there are groups in the OU, and doesn't let the user continue until they enter an OU that has groups in it
                     {
                         Write-Host $lang_no_groups_in_ou -ForegroundColor Red
                         $vane = $false                        
@@ -524,10 +541,10 @@ do
 
                 $elemszam = $csopnevek.Count
 
-                $csvdir = "D:\AD-Out\$lang_groups\$ounev"
-                CSVdir $csvdir
+                $csvdir = "$lang_groups\$ounev"
+                $csvdir = CSVdir $csvdir
 
-                    $progressbar = 100 / $elemszam
+                    $progressbar = 100 / $elemszam # To count one item is how much in percentage of the whole process
                     Write-Host $lang_progress
 
                     for ($i=0; $i -lt $elemszam; $i++)
@@ -538,11 +555,11 @@ do
                         $csopnev = Get-ADGroup $csopnevek[$i].samAccountName
                         $ment = Get-ADGroupMember -identity $csopnev | Get-ADObject -Properties description, samAccountName | select @{n=$lang_name; e='name'}, @{n=$lang_description; e='description'}, @{n=$lang_username; e='samAccountName'}
                         CSVfunkciok $ment $csvout $true
-                        $percentage = [math]::Round($progressbar * ($i+1))
-                        Write-Host "`r$Percentage%" -NoNewline
+                        $percentage = [math]::Round($progressbar * ($i+1)) # To count the current percentage
+                        Write-Host "`r$Percentage%" -NoNewline # To show the current percentage to the user, without putting it into a new line
                     }               
                     
-                Write-Host $lang_ou_whats_next
+                Write-Host "`n$lang_ou_whats_next"
                 $kilep = Valaszt ("N", "Q", "R")
             } while ($kilep -eq "R")
         }
@@ -558,7 +575,7 @@ do
                     Write-Host $lang_all_users_of_ou
                     $eredetiou = Read-Host -Prompt $lang_enter_ou
                     $ou = OUcheck $eredetiou
-                    $ounev = OUment $ou
+                    $ounev = $Script:ounev
                 
                     $vane = $true
                     [array]$userek = Get-ADUser -SearchBase $ou -Filter *
@@ -572,8 +589,8 @@ do
 
                 $elemszam = $userek.Count
 
-                $csvdir = "D:\AD-Out\$lang_users\$ounev"
-                CSVdir $csvdir
+                $csvdir = "$lang_users\$ounev"
+                $csvdir = CSVdir $csvdir
 
                     $progressbar = 100 / $elemszam
                     Write-Host $lang_progress
@@ -590,7 +607,7 @@ do
                         Write-Host "`r$Percentage%" -NoNewline
                     }               
                     
-                Write-Host $lang_ou_whats_next
+                Write-Host "`n$lang_ou_whats_next"
                 $kilep = Valaszt ("N", "Q", "R")
             } while ($kilep -eq "R")
         }
@@ -606,7 +623,7 @@ do
                     Write-Host $lang_all_computers_of_ou
                     $eredetiou = Read-Host -Prompt $lang_enter_ou
                     $ou = OUcheck $eredetiou
-                    $ounev = OUment $ou                
+                    $ounev = $Script:ounev                
                     
                     $vane = $true
                     $teszt = Get-ADComputer -Filter * -SearchBase $ou
@@ -618,8 +635,8 @@ do
                     }                    
                 } while ($vane -eq $false)
 
-                $csvdir = "D:\AD-Out\$lang_computers"
-                CSVdir $csvdir
+                $csvdir = $lang_computers
+                $csvdir = CSVdir $csvdir
                 
                 cls
                 $title
@@ -675,7 +692,7 @@ do
                 Write-Host $lang_users_of_ou
                 $eredetiou = Read-Host -Prompt $lang_enter_ou
                 $ou = OUcheck $eredetiou
-                $ounev = OUment $ou
+                $ounev = $Script:ounev
 
                 $vane = $true
                 $teszt = Get-ADUser -Filter * -SearchBase $ou
@@ -687,8 +704,8 @@ do
                     }                    
             } while ($vane -eq $false)
 
-            $csvdir = "D:\AD-Out\$lang_users"
-            CSVdir $csvdir
+            $csvdir = $lang_users
+            $csvdir = CSVdir $csvdir
 
             cls
             $title
@@ -731,6 +748,48 @@ do
             CSVfunkciok $ment $csvout
             Write-Host $lang_ou_whats_next
             $kilep = Valaszt ("N", "Q", "R")
+        }
+    S # Modify the save path of csvs
+        {
+            cls
+            $title
+            Write-Host $lang_old_path $script:path "`n"                            
+            $newpath = Read-Host -Prompt $lang_new_path
+
+            if(!(Test-Path -Path $newpath))
+            {
+                Write-Host $lang_folder_not_exist
+                $fold = Valaszt ("1", "2")
+                
+                do
+                {    
+                    if ($fold -eq "1")
+                    {
+                        try
+                        {
+                            $ErrorActionPreference = "Stop" # To throw an exception when the user tries to use an invalid path. Without it, the program gets into an infinite loop
+                            New-Item -ItemType directory -Path $newpath | Out-Null
+                        }
+                        catch
+                        {
+                            Write-Host "`n$lang_directory_cant_be_created" -ForegroundColor Red
+                            Write-Host $lang_new_or_exit
+                            $neworold = Valaszt ("1", "2")
+                            
+                            if ($neworold -eq "2")
+                            {
+                                $newpath = $script:path
+                            }
+                            else
+                            {
+                                $newpath = Read-Host -Prompt $lang_new_path
+                            }
+                        }
+                    } 
+                } while (!(Test-Path -Path $newpath) -and $fold -eq "1" -and $neworold -ne "2")
+            }
+
+            $script:path = $newpath
         }
     }
 } while ($kilep -ne "Q")
