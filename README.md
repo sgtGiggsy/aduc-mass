@@ -16,7 +16,7 @@ To make the user's job easier, it can translate the more userfriendly `domain\OU
 # FAQ
 > Does it work without RSAT (Remote Server Administration Tool) installed on the computer?
 
-Yes, and no. It *can* work without RSAT installed, but you'll need `Microsoft.ActiveDirectory.Management.dll`, and `Microsoft.ActiveDirectory.Management.resources.dll` to be put in the same folder where the ps1 file is. Obviously I can't share these DLLs *(it goes without saying you should never download DLLs from any untrusted source)* but you can get them from a PC that has RSAT installed. If a PC has neither RSAT installed, nor these two DLLs in the same folder as the ps1 file, the program won't run at all (it checks these two conditions at the begining, and if neither is met, it won't let you continue).
+Yes, and no. Basically it was designed to be used on a computer that *has* RSAT installed, but It *can* work without it. To make it work, you'll need `Microsoft.ActiveDirectory.Management.dll`, and `Microsoft.ActiveDirectory.Management.resources.dll` to be put in the same folder as the ps1 file is. Obviously I can't share these DLLs *(it goes without saying you should never download DLLs from any untrusted source)* but you can get them from a PC that has RSAT installed. If a PC has neither RSAT installed, nor these two DLLs in the same folder as the ps1 file, the program won't run at all (it checks these two conditions at the begining, and if neither is met, it won't let you continue).
 
 > Where can I find these DLLs?
 
