@@ -1,88 +1,49 @@
-﻿### Nyelv ###
-$lang_ad_module_not_installed = "!!! Az Active Directory modul nincs telepítve. A program funkciói így működésképtelenek !!!`n`n! A program leáll !"
-$lang_choose = "Válassz"
-$lang_choose_err = "Kérlek, csak a megadott lehetőségek közül válassz!"
-$lang_file_not_created = "Valami hiba történt, a fájl nem jött létre!"
-$lang_old_path = "A fájlok mentésének jelenlegi elérési útja:"
-$lang_new_path = "Kérlek add meg az új elérési utat!`nÚj elérési út"
-$lang_object_not_consist = "Az objektum nem tartalmaz tagokat"
-$lang_file_is_created = "A fájl létrejött. Helye:"
-$lang_id_not_exist = "A megadott azonosító nem létezik"
-$lang_reenter_id = "Kérlek add meg újra a lekérdezendő azonosítót`nAzonosító"
-$lang_non_existent_ou = "Nem létező OU-t adtál meg"
-$lang_enter_ou = "Kérlek add meg a lekérdezni kívánt OU elérési útját!`nElérési út"
-$lang_title_admin = "AD Felhasználók és Csoportok - Adminisztrátori mód`n"
-$lang_title_user = "AD Felhasználók és Csoportok - Felhasználói mód`n"
-$lang_warn_not_admin = "FIGYELEM!!!`nNem admin jogokkal futtatod a programot!`nBizonyos funkciók így is működni fognak, de csoportok illetve felhasználók módosítására nem lesz jogosultságod.`n`nHa ennek ellenére is futtatnád a programot, üss Entert"
-$lang_main_menu = "Mit szeretnél tenni?`n`n(1) Egy csoporthoz tartozó felhasználók lekérdezése`n(2) Egy felhasználó csoporttagságainak lekérdezése`n(3) Egy OU összes csoportjának tagjainak lekérdezése`n(4) Egy OU összes felhasználójának csoporttagságainak lekérdezése`n(5) Egy OU számítógépeinek lekérdezése, akár aktivitás/inaktivitás ideje szerint szűrve`n(6) Egy OU felhasználóinak lekérdezése, akár aktivitás/inaktivitás ideje szerint szűrve`n(S) A program gyökérkönyvtárának megváltoztatása"
-$lang_enter_group_name = "Kérlek add meg a lekérdezni kívánt csoport nevét!`nCsoportnév"
-$lang_i_found = "Megtaláltam a"
-$lang_the_group = "csoportot`n"
-$lang_group_whats_next_admin = "Csak kiiratni szeretnéd az eredményt, fájlba menteni, vagy egy másik csoporthoz hozzáadni ennek tagjait?`n`n(1) Ha kiíratnád`n(2) Ha fájlba mentetnéd`n(3) Ha másik csoporthoz adnád a tagokat"
-$lang_group_whats_next_user = "Csak kiiratni szeretnéd az eredményt, vagy fájlba is mentenéd?`n`n(1) Ha kiíratnád`n(2) Ha fájlba mentetnéd"
-$lang_name = "Név"
-$lang_description = "Rendfokozat"
-$lang_username = "Felhasználónév"
-$lang_groups = "Csoportok"
-$lang_group_whats_next = "(M) Ha más folyamatot szeretnél futtatni ugyanezzel a forrás csoporttal`n(U) Ha új csoportot szeretnél lekérdezni`n(N) Ha visszalépnél a program elejére`n(Q) Ha kilépnél"
-$lang_group_members_copy = "csoport tagjainak másolása"
-$lang_enter_target_group = "Kérlek, add meg a csoport nevét, amihez hozzá szeretnéd adni a tagokat!`nCsoportnév"
-$lang_to_group = "csoporthoz."
-$lang_copy_of = "másolása"
-$lang_task_unsuccesful = "`nA feladat végrehajtása sikertelen!`n"
-$lang_you_have_no_rights = "Nincs jogosultságod a"
-$lang_to_modify_group = "csoport módosítására"
-$lang_task_fully_succesful = "A feladat hibák nélkül futott le."
-$lang_copy_groups_whats_next = "(R) Ha hozzá akarnál adni valaki mást is ugyanezekhez a csoportokhoz`n(M) Ha más folyamatot szeretnél futtatni ugyanezzel a forrás csoporttal`n(U) Ha új csoportot szeretnél lekérdezni`n(N) Ha visszalépnél a program elejére`n(Q) Ha kilépnél"
-$lang_enter_username = "Kérlek add meg a lekérdezni kívánt felhasználó bejelentkezési nevét!`nAzonosító"
-$lang_the_user = "felhasználót, bejelentkezési neve:"
-$lang_user_whats_next_admin = "Csak kiiratni szeretnéd az eredményt, fájlba menteni, vagy átmásolnád a csoporttagságait egy másik felhasználóhoz?`n(1) Ha kiíratnád`n(2) Ha fájlba mentetnéd`n(3) Ha más felhasználóhoz másolnád"
-$lang_user_whats_next_user = "Csak kiiratni szeretnéd az eredményt vagy fájlba menteni?`n(1) Ha kiíratnád`n(2) Ha fájlba mentetnéd"
-$lang_user_whats_next = "(M) Ha más folyamatot szeretnél futtatni ugyanezzel a forrás felhasználóval`n(U) Ha új felhasználót szeretnél lekérdezni`n(N) Ha visszalépnél a program elejére`n(Q) Ha kilépnél"
-$lang_users = "Felhasználók"
-$lang_group_name = "Csoportnév"
-$lang_s_rights = "jogai"
-$lang_users_groups_copy = "felhasználó csoporttagságainak másolása"
-$lang_to_user = "felhasználóhoz"
-$lang_enter_target_user = "Kérlek add meg a felhasználó nevét, akihez másolni szeretnéd a csoporttagságokat`nAzonosító"
-$lang_have_no_rights_to_modify_groups = "Nincs jogosultságod a felhasználó hozzáadására a csoportokhoz!"
-$lang_task_ended_with_mistakes = "A feladat lefutott a következő hibákkal:`n"
-$lang_user_added = "felhasználó sikeresen hozzáadva"
-$lang_to_group_of = "csoporthoz a"
-$lang_of_groups = "csoportból.`n"
-$lang_copy_users_whats_next = "(R) Ha hozzá akarnál adni valaki mást is ugyanezekhez a csoportokhoz`n(M) Ha más folyamatot szeretnél futtatni ugyanezzel a forrás felhasználóval`n(U) Ha új felhasználót szeretnél lekérdezni`n(N) Ha visszalépnél a program elejére`n(Q) Ha kilépnél"
-$lang_all_groups_of_ou = "Egy OU ÖSSZES csoportjának lekérdezése`n"
-$lang_no_groups_in_ou = "A megadott OU-ban nincsenek csoportok`n"
-$lang_progress = "`nA folyamat állapota:"
-$lang_ou_whats_next = "`n(R) Ha más OU-t kérdeznél le`n(N) Ha visszalépnél a program elejére`n(Q) Ha kilépnél a programból"
-$lang_all_users_of_ou = "Egy OU ÖSSZES felhasználójának lekérdezése`n"
-$lang_no_users_in_ou = "A megadott OU-ban nincsenek felhasználók`n"
-$lang_all_computers_of_ou = "Egy OU számítógépeinek lekérdezése`n"
-$lang_no_computers_in_ou = "A megadott OU-ban nincsenek számítógépek`n"
-$lang_computers = "Számítógépek"
-$lang_ou_exist = "A keresett OU létezik`n"
-$lang_generic_or_activity_filtered = "Csak egy általános listát kérnél le, vagy aktivitás/inaktivitás ideje szerint is szűrnéd?`n`n(1) Általános lista`n(2) Aktivitás/inaktivitás szerint szűrt lista"
-$lang_the = "A(z)"
-$lang_computers_of_ou = "OU számítógépek lekérdezése`n"
-$lang_how_many_days = "Az elmúlt hány nap során aktív/inaktív objektumokat szeretnéd lekérdezni?`nNapok száma"
-$lang_computers_last = "számítógépek elmúlt"
-$lang_days_of_activity = "napjának aktivitása`n"
-$lang_active_or_inactive = "Az aktív, vagy inaktív gépeket szeretnéd lekérdezni?`n(1) Ha az aktív gépeket`n(2) Ha az inaktív gépeket"
-$lang_last = "elmult"
-$lang_days_active_pc = "NapbanAktivGepek"
-$lang_days_inactive_pc = "NapbanInaktivGepek"
-$lang_computername = "Gépnév"
-$lang_last_logon = "Utolsó bejelentkezés"
-$lang_OS = "Operációs rendszer"
-$lang_users_of_ou = "Egy OU felhasználóinak lekérdezése`n"
-$lang_ou_users = "OU felhasználók lekérdezése`n"
-$lang_users_last = "felhasználók elmúlt"
-$lang_days_active_users = "NapbanAktivFelhasznalok"
-$lang_days_inactive_users = "NapbanInaktivFelhasznalok"
-$lang_users_of = "Felhasználói"
-$lang_directory_cant_be_created = "Figyelem! A mappa létrehozása nem sikerült"
-$lang_folder_not_exist = "A megadott mappa nem létezik. Szeretnéd, hogy létrehozzam?`n(1) Igen`n(2) Nem"
-$lang_new_or_exit = "Megadsz egy új elérési utat, vagy inkább kilépnél, és használnád az eredeti útvonalat?`n(1) Új elérési út`n(2) Maradjunk az eredetinél"
+﻿### Language ###
+$sysloc = Get-WinSystemLocale
+if ($sysloc.Name -eq "hu-HU")
+    {
+        . .\hun.ps1
+    }
+else
+    {
+        . .\eng.ps1
+    }
+
+### Pre-run checks ###
+
+# First check. It doesn't let the user continue, if they doesn't have ActiveDirectory module installed. As the program heavily relies on AD module, it makes no sense to try it without that.
+if (!(Get-Module -ListAvailable -Name ActiveDirectory)) 
+    {
+        try {
+            $ErrorActionPreference = "Stop"
+            Import-Module .\Microsoft.ActiveDirectory.Management.dll
+            Import-Module .\Microsoft.ActiveDirectory.Management.resources.dll
+        }
+        catch {
+            Write-Host $lang_ad_module_not_installed -ForegroundColor Red
+            Read-Host
+        break
+        }
+    } 
+
+# Second check. It warns the user if they try to run the program with user level rights. Most functions work without admin rights, but it still worth to notify the user about it.
+$admine = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
+if (!($admine.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)))
+    {
+        cls
+        $title = $lang_title_user
+        Write-Host $title -ForegroundColor Yellow
+        Write-Host $lang_warn_not_admin -ForegroundColor Yellow
+        $admin = $false
+        Read-Host
+    }
+else 
+    {
+        $title = $lang_title_admin
+        $admin = $true
+        $title
+    }
+$script:path = "D:\AD-Out" # The root of the default save path for csvs.
 
 ### Functions ###
 
@@ -153,7 +114,7 @@ function Valaszt
     return $valasztas
 }
 
-# This function handles the saving into csv. While save into csv is a basic function in PowerShell, it adds a little more functionality to it
+## This function handles the saving into csv. While save into csv is a basic function in PowerShell, it adds a little more functionality to it
 function CSVfunkciok
 {
     param ($bemenet, $csvout, [bool]$noout) # The first variable is the output from the pipeline, the second is the path and name we want to save our csv as, and the third is a boolean argument, that we have to set to true, if we don't want output on the console
@@ -193,12 +154,12 @@ function Letezike
     param ($obj)
     do
     {
-        if (!(dsquery user -samid $obj) -and !(dsquery group -samid $obj))
+        if (@(Get-ADObject -Filter { SamAccountName -eq $obj }).Count -eq 0)
             {                
                 Write-Host "`n$lang_id_not_exist" "`n" -ForegroundColor Red
                 $obj = Read-Host -Prompt $lang_reenter_id
             }
-    } while (!(dsquery user -samid $obj) -and !(dsquery group -samid $obj))
+    } while (@(Get-ADObject -Filter { SamAccountName -eq $obj }).Count -eq 0)
     return $obj
 }
 
@@ -246,35 +207,7 @@ function CSVdir
     return $csvpath
 }
 
-
 ####### Program entry point ########
-
-# First check. It doesn't let the user continue, if they doesn't have ActiveDirectory module installed. As the program heavily relies on AD module, it makes no sense to try it without that.
-if ((Get-Module -ListAvailable -Name ActiveDirectory)) 
-    {
-        Write-Host $lang_ad_module_not_installed -ForegroundColor Red
-        Read-Host
-        break
-    } 
-
-# Second check. It warns the user if they try to run the program with user level rights. Most functions work without admin rights, but it still worth to notify the user about it.
-$admine = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
-if (($admine.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) -eq $false)
-    {
-        cls
-        $title = $lang_title_user
-        Write-Host $title -ForegroundColor Yellow
-        Write-Host $lang_warn_not_admin -ForegroundColor Yellow
-        $admin = $false
-        Read-Host
-    }
-else 
-    {
-        $title = $lang_title_admin
-        $admin = $true
-        $title
-    }
-$script:path = "D:\AD-Out" # The root of the default save path for csvs.
 
 # The main loop of the program. The user won't leave this from now, until they close the program. #
 do
@@ -282,7 +215,7 @@ do
     # Choose from the given options #
     cls
     $title
-    Write-Host $lang_main_menu
+    Write-Host $lang_main_menu $lang_old_path $script:path
     $mit = Valaszt ("1", "2", "3", "4", "5", "6", "S")
 
     cls
@@ -342,7 +275,7 @@ do
                                         $kitol = Get-ADGroup $csopnev                                        
                                         cls
                                         $title
-                                        Write-Host $kitol.name $lang_group_members_copy"`n"
+                                        Write-Host $lang_group_members_copy_the $kitol.name $lang_group_members_copy"`n"
                                         $newgroup = Read-Host -Prompt $lang_enter_target_group
                                         $newgroup = Letezike $newgroup
 
@@ -351,7 +284,7 @@ do
                                         $kihez = Get-ADGroup $newgroup                    
                                         cls
                                         $title
-                                        Write-Host $kitol.Name $lang_group_members_copy $kihez.Name $lang_to_group
+                                        Write-Host $kitol.Name $lang_group_members_copying $kihez.Name $lang_to_group
 
                                         $elemszam = $members.Count
 
@@ -408,7 +341,7 @@ do
                     cls
                     $title
                     $kitol = Get-ADUser $username 
-                    Write-Host $lang_i_found $kitol.name $lang_the_user $username"`n" -ForegroundColor Green
+                    Write-Host $lang_i_found $username $lang_the_user $kitol.name"`n" -ForegroundColor Green
                     if ($admin) # As we probably don't want users to modify groups, most likely they don't even have rights to do so, we won't even show the option to them
                     {
                         Write-Host $lang_user_whats_next_admin
@@ -460,7 +393,7 @@ do
 
                                     cls
                                     $title
-                                    Write-Host $kitol.Name $lang_users_groups_copy $kihez.Name $lang_to_user
+                                    Write-Host $kitol.Name $lang_users_groups_copying $kihez.Name $lang_to_user
                                     for ($i=0; $i -lt $elemszam; $i++)
                                         {
                                             # Catch exceptions. It won't show them here, but collected at the end of the process #
@@ -491,7 +424,7 @@ do
                                                 cls
                                                 $sikeres = $elemszam-$hiba.Count
                                                 $title
-                                                Write-Host $lang_task_ended_with_mistakes -ForegroundColor Yellow
+                                                Write-Host $lang_task_ended_with_errors -ForegroundColor Yellow
                                                 for ($j=0; $j -lt $hiba.Count; $j++)
                                                     {
                                                         Write-Host $lang_you_have_no_rights $hiba[$j] $lang_to_modify_group -ForegroundColor Yellow                                                    
@@ -525,7 +458,7 @@ do
                 do
                 {
                     Write-Host $lang_all_groups_of_ou
-                    $eredetiou = Read-Host -Prompt $lang_enter_ou
+                    $eredetiou = Read-Host -Prompt $lang_enter_ou                        
                     $ou = OUcheck $eredetiou # It calls the function to check if the entered OU exist
                     $ounev = $Script:ounev # It calls the $script:ounev variable from OUcheck function, so we could create separate folders by OUs
                 
@@ -544,7 +477,7 @@ do
                 $csvdir = "$lang_groups\$ounev"
                 $csvdir = CSVdir $csvdir
 
-                    $progressbar = 100 / $elemszam # To count one item is how much in percentage of the whole process
+                    $progressbar = 100 / $elemszam # To count one item means how much in percentage of the whole process
                     Write-Host $lang_progress
 
                     for ($i=0; $i -lt $elemszam; $i++)
@@ -564,15 +497,16 @@ do
             } while ($kilep -eq "R")
         }
 
-    4 # Egy OU minden felhasználójának lekérdezése #
+    4 # All memberships of every user in a certain OU #
         {
             do
             {
                 cls
                 $title
+                # Loop that gets the OU, checks if there are users in it, then continues
                 do
                 {
-                    Write-Host $lang_all_users_of_ou
+                    Write-Host $lang_all_users_of_ou                    
                     $eredetiou = Read-Host -Prompt $lang_enter_ou
                     $ou = OUcheck $eredetiou
                     $ounev = $Script:ounev
@@ -580,7 +514,7 @@ do
                     $vane = $true
                     [array]$userek = Get-ADUser -SearchBase $ou -Filter *
 
-                    if($userek.Length -eq 0)
+                    if($userek.Length -eq 0) 
                     {
                         Write-Host $lang_no_users_in_ou -ForegroundColor Red
                         $vane = $false                        
@@ -612,12 +546,13 @@ do
             } while ($kilep -eq "R")
         }
 
-    5 # Egy OU számítógépei, akár aktivitás/inaktivitás szerint szűrve #
+    5 # All PCs of a certain OU, filtered or not filtered by recent activity #
         {
             do
             {
                 cls
                 $title
+                # Loop that gets the OU, checks if there are PCs in it, then continues
                 do
                 {
                     Write-Host $lang_all_computers_of_ou
@@ -641,10 +576,10 @@ do
                 cls
                 $title
                 Write-Host $lang_ou_exist -ForegroundColor Green
-                Write-Host $lang_generic_or_activity_filtered
+                Write-Host $lang_generic_or_activity_filtered # Decide what kind of list we'd like to recieve
                 $szurt = Valaszt ("1", "2")
                 
-                if ($szurt -eq 2)
+                if ($szurt -eq 2) # In case we'd like a filtered list
                 {
                     cls
                     $title
@@ -655,7 +590,7 @@ do
                     cls
                     $title
                     Write-Host $lang_the $eredetiou $lang_computers_last $napja $lang_days_of_activity
-                    Write-Host $lang_active_or_inactive
+                    Write-Host $lang_active_or_inactive # Decide if we'd like a list about the active, or inactive PCs
                     $avi = Valaszt ("1", "2")
 
                     if ($avi -eq "1")
@@ -682,10 +617,11 @@ do
             } while ($kilep -eq "R")
         }
 
-    6 # Egy OU felhasználói, akár aktivitás/inaktivitás szerint szűrve #
+    6 # All Users of an OU, filtered or not filtered by their activity #
         {
             cls
             $title
+            # Loop that gets the OU, checks if there are users in it, then continues
             do
             {
 
@@ -711,9 +647,9 @@ do
             $title
             Write-Host $lang_ou_exist -ForegroundColor Green
             Write-Host $lang_generic_or_activity_filtered
-            $szurt = Valaszt ("1", "2")
+            $szurt = Valaszt ("1", "2") # Decide what kind of list we'd like to recieve
 
-            if ($szurt -eq 2)
+            if ($szurt -eq 2) # In case we'd like a filtered list
                 {
                     cls
                     $title
@@ -724,7 +660,7 @@ do
                     cls
                     $title
                     Write-Host $lang_the $eredetiou $lang_users_last $napja $lang_days_of_activity
-                    Write-Host $lang_active_or_inactive
+                    Write-Host $lang_active_or_inactive # Decide if we'd like a list about the active, or inactive users 
                     $avi = Valaszt ("1", "2")
 
                     if ($avi -eq "1")
