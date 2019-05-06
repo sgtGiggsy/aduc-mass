@@ -28,7 +28,7 @@ The program supports English and Hungarian. As my native language is Hungarian, 
 
 > It's good and everything, but everytime I'd like to use it, I have to run the script from command line? Couldn't it be a proper executable?
 
-Okay, this might be a beginner question that nobody would ask, but I since I've put it there, I'm gonna answer it. You can compile the ps1 file to an executable with PS2EXE anytime. https://gallery.technet.microsoft.com/scriptcenter/PS2EXE-GUI-Convert-e7cb69d5
+Okay, this might be a beginner question that nobody would ask, but since I've put it there, I'm gonna answer it. You can compile the ps1 file to an executable with PS2EXE anytime. https://gallery.technet.microsoft.com/scriptcenter/PS2EXE-GUI-Convert-e7cb69d5
 
 # Future plans
 **Functions**
