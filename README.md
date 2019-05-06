@@ -26,6 +26,10 @@ Ironically you'll need a computer that has RSAT installed. The DLLs are in their
 
 The program supports English and Hungarian. As my native language is Hungarian, the English translation most likely has grammatical and other errors, though I hope not so many. The comments are also in English.
 
+> It's good and everything, but everytime I'd like to use it, I have to run the script from command line? Couldn't it be a proper executable?
+
+Okay, this might be a beginner question that nobody would ask, but I since I've put it there, I'm gonna answer it. You can compile the ps1 file to an executable with PS2EXE anytime. https://gallery.technet.microsoft.com/scriptcenter/PS2EXE-GUI-Convert-e7cb69d5
+
 # Future plans
 **Functions**
 
@@ -39,4 +43,7 @@ In a very-VERY distant future I plan to rewrite the code in C# so it could have 
 Despite I mentioned rewriting the code several times, it already works relatively bugfree as it is, and I can recommend it to every AD admin, who is allowed to use only PowerShell and ADUC to manage their Active Directory.
 
 # Known bugs
-When it searches the name of the entered object, it checks among both users and groups, so it gives false positive result in case it finds the name among the other type of object. 
+When it searches the name of the entered object, it checks among both users and groups, so it gives false positive result in case it finds the name among the other type of object.
+
+# Other
+Of course, I look forward to suggestions, bug reports, or anything else you could come up.
