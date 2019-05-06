@@ -24,13 +24,15 @@ Ironically you'll need a computer that has RSAT installed. The DLLs are in their
 
 > Which languages are supported?
 
-The program supports English and Hungarian. As my native language is Hungarian, the English translation most likely has grammatical and other errors. The comments are also in English.
+The program supports English and Hungarian. As my native language is Hungarian, the English translation most likely has grammatical and other errors, though I hope not so many. The comments are also in English.
 
 # Future plans
 **Functions**
+
 Bulk disabling, and bulk deleting users.
 
 **Other plans**
+
 I plan to rewrite the code with a more object oriented approach, but I'm very novice in any kinds of programming, so it might takes some time. Or not. We'll see.
 In a very-VERY distant future I plan to rewrite the code in C# so it could have a decent GUI.
 
