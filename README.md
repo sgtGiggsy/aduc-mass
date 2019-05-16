@@ -37,9 +37,13 @@ Okay, this might be such a beginner question that nobody on this site would ask,
 # Future plans
 **Functions, improvements**
 
+* Updating user attributes from a CSV. This one is almost done, but not ready to be merged into public branch.
 * Bulk copying, bulk disabling and bulk deleting users, computers
 * Navigation in the menus with arrow keys
 * Changing the language system, so the language files won't have to be in ps1 extension
+
+*Import attributes from CSV*
+I think this one needs a little explanation, as by itself it sounds a very basic function, that's not a big deal to implement. Obviously updating user profiles with the contents of a CSV is not a huge feat. If one knows which attribute they want to update when writing the code, it takes a few minutes to code tops. But I wanted something more flexible, that doesn't need any change in the code regardless of the number or type of the attributes we want to change. At the moment it works perfectly, with minor mistakes that are all about not properly handling missing values. **BUT** As it's designed for be easy to use, in case the user make mistakes with preparing the CSV file (like putting wrong values in it for example), it can also cause serious damages. So before merging it to the public release, I have implement a save feature, that makes any mistake on the user's side reversable.
 
 **Other plans**
 
