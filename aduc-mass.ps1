@@ -246,19 +246,33 @@ function AfterOU
     $kilep = Valaszt ("R", "U", "Q")
     return $kilep
 }
+class Attribute
+{
+    Attribute(
+        $dispname,
+        $attrname
+    )
+    {
+        $this.$dispname = $dispname
+        $this.attrname = $attrname
+    }
+    $outmethod = "@{n=$dispname; e='$attrname'}"    
+}
 
 function PickAttributes
-{
-    $ment = Get-ADComputer -Filter $activity -SearchBase $ou -Properties $properties | select @{n=$lang.computername; e='name'}, @{n=$lang.last_logon;e='LastLogonDate'}, @{n=$lang.OS; e='OperatingSystem'}
+{    
+    #$ment = Get-ADComputer -Filter $activity -SearchBase $ou -Properties $properties | select @{n=$lang.computername; e='name'}, @{n=$lang.last_logon;e='LastLogonDate'}, @{n=$lang.OS; e='OperatingSystem'}
 
     $active = "{LastLogonTimeStamp -gt $($time)}"
     $inactive = "{LastLogonTimeStamp -lt $($time)}"
     $unfiltered = "*"
     $activity = $active, $inactive, $unfiltered
 
-    $lang.last_logon
     $lang.OS
-    $last_logon  = "LastLogonDate"
+    $lastlogon = [Attribute]::new($lang.last_logon, "LastLogonDate")
+    $lastlogon.name
+
+    $last_logon  = 
     $os = "OperatingSystem"
     $telnumber = "telephoneNumber"
     $enabled = "enabled"
@@ -271,6 +285,15 @@ function PickAttributes
     $logonWorkstation = "logonWorkstation"
     $mail = "mail"
     $title = "title"
+    [array]$attributes = ($last_logon, $os, $telnumber, $enabled, $company, $department, $name, $description, $logonWorkstation, $mail, $title)
+    for ($i = 0; $i -lt $attributes.Length; $i++)
+    {
+        Write-Host $attributes[$i]
+    }
+    do
+    {
+
+    }while($finished -eq $false)
 }
 
 
