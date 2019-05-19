@@ -28,42 +28,95 @@ function Valaszt
     return $valasztas
 }
 
+function Outhelp
+{
+    param($prompt, $help)
+        
+        $parameter
+        do
+        {
+            $parameter = Read-Host -Prompt $prompt
+            if($parameter -eq "H")
+            {
+                Write-Host $help
+                Read-Host
+            }
+        }while($parameter -eq "H")
+        return $parameter
+    
+}
 function Createcustom {
     param ($attribfilter)
 # Create custom attributes
-    Clear-Host
+    
     if ($attribfilter -eq $lang.attribute)
     {
         do
         {
+            Clear-Host
             Write-Host $lang.create_custom_attrib
-            Write-Host $lang.create_custom_attrib_expl
-            $customname = Read-Host -Prompt $lang.custom_attr_dispname
+            Write-Host $lang.create_custom_attrib_expl "`n"
+            $customname = Outhelp $lang.custom_attr_dispname $lang.custom_attr_dispname_help
             if($customname -eq $lang.custom_finish)
             {
                 Break
             }
-            if($customname -eq "H")
-            {
-                $lang.custom_attr_dispname_help
-            }
-            $customattribute = Read-Host -Prompt $lang.custom_attr_msname
+            $customattribute = Outhelp $lang.custom_attr_msname $lang.custom_attr_msname_help
             if($customattribute -eq $lang.custom_finish)
             {
                 Break
             }
-            if($customname -eq "H")
-            {
-                $lang.custom_attr_msname_help
-            }
             $attributes.Add(($customattribute = [Attribute]::new($customname, $customattribute))) > $null
+            if($customattribute.outmethod)
+            {
+                Write-Host $lang.custom_attrib_successful -ForegroundColor Green
+            }
+            else
+            {
+                Write-Host $lang.custom_attrib_unsuccesful -ForegroundColor Red
+            }
+            Write-Host "`n"
+            Read-Host
         }while ($customname -ne $lang.custom_finish)
     }
-    if ($attribfilter -eq $lang.attribute)
+    if ($attribfilter -eq $lang.filter)
     {
         do
         {
-
+            Clear-Host
+            Write-Host $lang.create_custom_filter
+            Write-Host $lang.create_custom_filter_expl "`n"
+            $customtruesidename = Outhelp $lang.custom_filter_dispname $lang.custom_filter_dispname_help
+            if($customtruesidename -eq $lang.custom_finish)
+            {
+                Break
+            }
+            $customtrueside = Outhelp $lang.custom_filter_msname $lang.custom_filter_msname_help
+            if($customtrueside -eq $lang.custom_finish)
+            {
+                Break
+            }
+            $customfalsesidename = Outhelp $lang.custom_filter_dispname $lang.custom_filter_dispname_help
+            if($customfalsesidename -eq $lang.custom_finish)
+            {
+                Break
+            }
+            $customfalseside = Outhelp $lang.custom_filter_msname $lang.custom_filter_msname_help
+            if($customfalseside -eq $lang.custom_finish)
+            {
+                Break
+            }
+            $filters.Add(($customfilter = [Filterpairs]::new($customtrueside, $customtruesidename, $customfalseside, $customfalsesidename))) > $null
+            if($customfilter.outmethod)
+            {
+                Write-Host $lang.custom_attrib_successful -ForegroundColor Green
+            }
+            else
+            {
+                Write-Host $lang.custom_attrib_unsuccesful -ForegroundColor Red
+            }
+            Write-Host "`n"
+            Read-Host
         }while ($customname -ne $lang.custom_finish)
     }
     Break
@@ -105,7 +158,7 @@ class Filterpairs
                 1 { $pointer = "[*] [ ] [ ]" }
                 2 { $pointer = "[ ] [ ] [*]" }
             }
-            Write-Host "($char)" $this.truesidename $pointer $this.falsesidename -NoNewline
+            Write-Host $("({0}) {1, 23} {2} {3}" -f $char, $this.truesidename, $pointer, $this.falsesidename) -NoNewline
         }
 
     Set()
@@ -160,7 +213,7 @@ class Attribute
             {
                 Write-Host "`r[ ] " -NoNewline
             }
-            Write-Host "($sorsz) $($this.name)`t`t`t`t" -NoNewline
+            Write-Host $("({0, 2}) {1, -47}" -f $sorsz, $this.name) -NoNewline
         }
     Set()
         {
@@ -178,6 +231,7 @@ class Attribute
     #$ment = Get-ADComputer -Filter $activity -SearchBase $ou -Properties $properties | select @{n=$lang.computername; e='name'}, @{n=$lang.last_logon;e='LastLogonDate'}, @{n=$lang.OS; e='OperatingSystem'}
 ### Filters
 $filters = New-Object System.Collections.ArrayList($null)
+$time = "g"
 $filters.Add(($lastlogonfilter = [Filterpairs]::new(($active = "{LastLogonTimeStamp -gt $($time)}"),$lang.active_ones,($inactive = "{LastLogonTimeStamp -lt $($time)}"),$lang.inactive_ones))) > $null
 $filters.Add(($isenabled = [Filterpairs]::new(("{Enabled -eq True}"),$lang.enabled,($isdisabled = "{Enabled -eq False}"),$lang.disabled))) > $null
 
@@ -203,7 +257,7 @@ $unfiltered = "*"
 
 do
     {
-    #Clear-Host
+    Clear-Host
     Write-Host "A kimenetben megjelenítendő attribútumok kiválasztása, eredmények szűrése`n"
     Write-Host "Választható attribútumok`t`t`t`tVálasztható filterek"
     [array]$opciok = $null
@@ -220,7 +274,7 @@ do
         elseif($i -gt $attributes.Count-6)
         {
             Write-Host $attributes[$i].Out($i) -nonewline
-            Write-Host "`t"$functionexpl[$j] -ForegroundColor Gray
+            Write-Host $functionexpl[$j] -ForegroundColor Gray
             $j++
             $opciok += ($i +1)
         }
@@ -244,7 +298,7 @@ do
     switch ($setter)
         {
             K { }
-            H { }
+            H { Read-Host $lang.attribselectmain_help }
             $lang.attribute { Createcustom($setter) }
             $lang.filter { Createcustom($setter) }
             Default 
@@ -267,3 +321,41 @@ if ($lastlogonfilter.state -ne 0)
     $time = "Placeholder" 
     $lastlogonfilter.Outmethod()
 }
+[string]$properties = "samAccountname"
+[string]$select = "@{n=$($lang.username); e='samAccountName'}"
+[string]$filter
+
+for($i = 0; $i -lt $attributes.Count; $i++)
+    {
+        if($attributes[$i].setter)
+        {
+            $properties += ", $($attributes[$i].attribute)"
+            $select += ", $($attributes[$i].outmethod)"
+        }
+    }
+$filtercount = 0
+for($i = 0; $i -lt $filters.Count; $i++)
+    {
+        if($filters[$i].state -ne 0)
+        {
+            if($filtercount -eq 0)
+            {
+                $filter += "$($filters[$i].Outmethod()), "
+            }
+            else
+            {
+                $filter += "$($filters[$i].Outmethod())"
+            }
+            $filtercount++
+        }
+    }
+    if($filtercount -eq 0)
+    {
+        $filter = "*"
+    }
+
+    $filter
+    $properties
+    $select
+
+    Read-Host
