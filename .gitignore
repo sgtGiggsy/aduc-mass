@@ -1,3 +1,5 @@
 Microsoft.ActiveDirectory.Management.dll
 Microsoft.ActiveDirectory.Management.resources.dll
 aduc.ico
+classtest.ps1
+All-In-OU-class.ps1

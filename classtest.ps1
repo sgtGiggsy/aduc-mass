@@ -1,4 +1,7 @@
 ﻿$lang = Get-Content ".\Languages\hun.lang" | Out-String | ConvertFrom-StringData
+#. .\aduc-mass.ps1
+
+
 function Valaszt
 {
     param($choice) # It receives an array of the possible choices, it's not fixed, so it doesn't matter if we have 2 allowed choices, or 30
@@ -27,7 +30,6 @@ function Valaszt
     } while ($teszt -ne $true)
     return $valasztas
 }
-
 function Outhelp
 {
     param($prompt, $help)
@@ -42,8 +44,7 @@ function Outhelp
                 Read-Host
             }
         }while($parameter -eq "H")
-        return $parameter
-    
+        return $parameter    
 }
 function Createcustom {
     param ($attribfilter)
@@ -161,7 +162,7 @@ class Filterpairs
             Write-Host $("({0}) {1, 23} {2} {3}" -f $char, $this.truesidename, $pointer, $this.falsesidename) -NoNewline
         }
 
-    Set()
+    Set($isuser)
         {
             if ($this.state -eq 2)
             {
@@ -230,31 +231,57 @@ class Attribute
 
 class OUfilter
 {
-    [bool]$setter = $true
+    [bool]$state
     $ou
-    Set()
+    Set($isuser)
     {
         Write-Host
-        if ($this.setter)
+        if ($this.state)
         {
             Write-Host $script:lang.unset_ou
             $yousure = Read-Host -Prompt $script:lang.choose
             if ($yousure -eq $script:lang.yes_char)
             {
-                $this.setter = $false
+                $this.state = $false
             }
         }
         else
         {
-            $this.ou = OUcheck
-            $this.setter = $true
+            <#$vane = $true
+            do
+            {
+                $this.ou = OUcheck
+                $ounev = $Script:ounev                
+
+                if ($isuser)
+                {
+                    $teszt = Get-ADUser -Filter * -SearchBase $this.ou
+            
+                    if($teszt.Length -eq 0)
+                    {
+                        Write-Host $script:lang.no_users_in_ou "`n" -ForegroundColor Red
+                        $vane = $false                        
+                    }
+                }
+                else 
+                {
+                    $teszt = Get-ADComputer -Filter * -SearchBase $this.ou
+            
+                    if($teszt.Length -eq 0)
+                    {
+                        Write-Host $script:lang.no_computers_in_ou "`n" -ForegroundColor Red
+                        $vane = $false                        
+                    }
+                }                    
+            } while ($vane -eq $false)#>
+            $this.state = $true
         }
     }
     Out($char)
     {
-        if ($this.setter)
+        if ($this.state)
         {
-            Write-Host $("({0}) Choosen OU: {1}" -f $char, $char) -NoNewline
+            Write-Host $("({0}) Choosen OU: {1}" -f $char, $char <#$Script:ounev#>) -NoNewline
             #Write-Host "Choosen OU: " <#$Script:ounev#> -NoNewline
         }
         else 
@@ -269,20 +296,269 @@ class OUfilter
 }
 
 ### Filters
-function Queryfiltering {
-    param ($isuser, $issingle)
+#function Queryfiltering {
+ #   param ($isuser, $issingle, $title, $objname)
 
-    $isuser = $true
-    $issingle = $false
+class QueryFiltering
+{
+    $isuser
+    $issingle
+    $menutitle
+    $objname
+    $setter
+    $filters
+    $attributes
+    QueryFiltering($isuser, $issingle, $menutitle, $objname)
+    {
+        $this.isuser = $isuser
+        $this.issingle = $issingle
+        $this.menutitle = $menutitle
+        $this.objname = $objname
+        $this.filters = New-Object System.Collections.ArrayList($null)
+        $this.attributes = New-Object System.Collections.ArrayList($null)
+        $this.Paramlist($this.filters, $this.attributes)        
+    }
+
+    Paramlist($filters, $attributes)
+    {        
+        # Filters. We need them only if we want to query more users, so they won't show up when querying one user
+        if (!($this.issingle))
+        {        
+            "Meghivattam"
+            $filters.Add(($script:lastlogonfilter = [Filterpairs]::new(($active = "{LastLogonTimeStamp -gt $($this.time)}"),$script:lang.active_ones,($inactive = "{LastLogonTimeStamp -lt $($this.time)}"),$script:lang.inactive_ones))) > $null
+            $filters.Add(($isenabled = [Filterpairs]::new(("{Enabled -eq True}"),$script:lang.enabled,($isdisabled = "{Enabled -eq False}"),$script:lang.disabled))) > $null
+            $filters.Add(($oufilter = [OUfilter]::new())) > $null
+        }
+        $attributes.Add(($lastlogon = [Attribute]::new($script:lang.last_logon, "LastLogonDate"))) > $null
+        $attributes.Add(($enabled = [Attribute]::new($script:lang.enabled, "enabled"))) > $null
+        $attributes.Add(($description = [Attribute]::new($script:lang.description, "Description"))) > $null
+        $attributes.Add(($created = [Attribute]::new($script:lang.created, "created"))) > $null
+        if(!($this.isuser))
+        {
+            $attributes.Add(($os = [Attribute]::new($script:lang.os, "OperatingSystem"))) > $null
+            $attributes.Add(($computername = [Attribute]::new($script:lang.computername, "Name"))) > $null
+            $attributes.Add(($IPv4Address = [Attribute]::new($script:lang.IPv4Address, "IPv4Address"))) > $null
+            $attributes.Add(($logoncount = [Attribute]::new($script:lang.logoncount, "logoncount"))) > $null
+        }
+        else
+        {
+            $attributes.Add(($telnumber = [Attribute]::new($script:lang.telephoneNumber, "telephoneNumber"))) > $null
+            $attributes.Add(($company = [Attribute]::new($script:lang.Company, "Company"))) > $null
+            $attributes.Add(($department = [Attribute]::new($script:lang.department, "Department"))) > $null
+            $attributes.Add(($name = [Attribute]::new($script:lang.name, "Name"))) > $null
+            $attributes.Add(($logonWorkstation = [Attribute]::new($script:lang.logonWorkstation, "logonWorkstation"))) > $null
+            $attributes.Add(($mail = [Attribute]::new($script:lang.mail, "mail"))) > $null
+            $attributes.Add(($title = [Attribute]::new($script:lang.title, "title"))) > $null
+        }
+    }
+
+    Menu()
+    {
+        do
+        {
+            #Clear-Host
+            if($this.isuser -and $this.issingle)
+            {
+                Write-Host $this.objname.Name $script:lang.user_is_being_queried
+            }
+            Write-Host $script:lang.attributes_and_filters"`n"
+            if (!($this.issingle))
+            {
+                Write-Host $("{0, -55} {1}" -f $script:lang.available_attribs, $script:lang.available_filters)
+            }
+            else
+            {
+                Write-Host $script:lang.available_attribs
+            }
+            [array]$opciok = $null
+            [array]$functionexplanation = ($script:lang.funcexptitle, <#$lang.custom_attrib_title, $lang.custom_filter_title,#> $script:lang.funchelp, $script:lang.funcfinish)
+            $j = 0
+            for ($i = 0; $i -lt $this.attributes.Count; $i++)
+            {
+                if($i -lt $this.filters.Count)
+                {
+                    Write-Host $this.attributes[$i].Out($i) $this.filters[$i].Out([Filterindex]$i)
+                    $opciok += ($i +1)
+                    $opciok += [Filterindex]$i
+                }
+                elseif($i -gt ($this.attributes.Count-$functionexplanation.count-1))
+                {
+                    Write-Host $this.attributes[$i].Out($i) -nonewline
+                    Write-Host $functionexplanation[$j] -ForegroundColor Gray
+                    $j++
+                    $opciok += ($i +1)
+                }
+                else
+                {
+                    Write-Host $this.attributes[$i].Out($i)
+                    $opciok += ($i +1)
+                }
+            }
+            $opciok += "K"
+            $opciok += "H"
+            $opciok += $script:lang.attribute
+            $opciok += $script:lang.filter
+
+            $this.setter = Valaszt($opciok)
+            switch ($this.setter)
+                {
+                    K { }
+                    H { Read-Host $script:lang.attribselectmain_help }
+                    $script:lang.attribute { Createcustom($this.setter) }
+                    $script:lang.filter { Createcustom($this.setter) }
+                    Default 
+                    {
+                        try
+                        {
+                            [int32]$this.setter
+                            $this.attributes[$this.setter-1].Set()
+                        }
+                        catch
+                        {
+                            $this.filters[[Filterindex]::($this.setter).value__].Set($this.isuser)
+                        }
+                    }
+                }    
+        }while($this.setter -ne "K")
+        $this.Output()
+    }
+
+    Output()
+    {
+        [string]$properties = "samAccountname"
+        [string]$select = "@{n='$($script:lang.username)'; e='samAccountName'}"
+        [string]$filter = $null | Out-Null
+        [string]$searchbase = $null
+        $time = $null
+        
+        if ($script:lastlogonfilter.state -ne 0 -and $this.issingle -eq $false)
+    {
+        Write-Host $script:lang.youset_day_filter
+        do
+        {   
+            try
+            {
+                [int32]$time = Read-Host -Prompt $script:lang.youset_daynumber
+            }
+            catch
+            {
+                Write-Host $script:lang.non_numeric_value -ForegroundColor Red
+            }
+        } while(!($time -is [int32]))
+        $script:lastlogonfilter.trueside = "{LastLogonTimeStamp -gt $time}"
+        $script:lastlogonfilter.falseside = "{LastLogonTimeStamp -lt $time}"
+    }
+
+    for($i = 0; $i -lt $this.attributes.Count; $i++)
+        {
+            if($this.attributes[$i].setter)
+            {
+                $properties += ", $($this.attributes[$i].attribute)"
+                $select += ", $($this.attributes[$i].outmethod)"
+            }
+        }
+    $filtercount = 0
+    $isoufiltered = $false
+    for($i = 0; $i -lt $this.filters.Count; $i++)
+    {
+        if($this.filters[$i].state -ne 0 -and $this.filters[$i].state -ne $false)
+        {
+            if ($this.filters[$i] -isnot "OUfilter")
+            {
+                if($filtercount -eq 0)
+                {
+                    $filter += "$($this.filters[$i].Outmethod())"
+                }
+                else
+                {
+                    $filter += ", $($this.filters[$i].Outmethod())"
+                }
+            }
+            elseif($this.filters[$i].state -eq $true)
+            {
+                $searchbase = "$($this.filters[$i].Outmethod())"
+                $isoufiltered = $true
+                $filtercount--
+            }
+            $filtercount++
+        }
+    }
+    if($filtercount -eq 0)
+    {
+        $filter = "*"
+    }
+
+
+    if ($this.isuser)
+    {
+        if ($this.issingle)
+        {
+            Write-Host "Get-ADUser $this.objname -Properties $properties | Select-Object $select"
+        }
+        elseif (!($isoufiltered))
+        {            
+            Write-Host "Get-ADUser -Filter $filter -Properties $properties | Select-Object $select"
+        }
+        else 
+        {
+            Write-Host "Get-ADUser -Filter $filter -SearchBase '$($searchbase)' -Properties $properties | Select-Object $select"
+            
+        }
+
+    }
+    else 
+    {
+        if ($this.issingle)
+        {
+            Write-Host "$this.objname -Properties $properties | Select-Object $select"
+        }
+        elseif (!($isoufiltered))
+        {
+            Write-Host "Get-ADComputer -Filter $filter -Properties $properties | Select-Object $select"
+        }
+        else 
+        {
+            Write-Host "Get-ADComputer -Filter $filter -SearchBase $searchbase -Properties $properties | Select-Object $select"
+        }
+    }
+    }
+}
+
+<### Attributes
+    $attributes = New-Object System.Collections.ArrayList($null)
+    $attributes.Add(($lastlogon = [Attribute]::new($script:lang.last_logon, "LastLogonDate"))) > $null
+    $attributes.Add(($enabled = [Attribute]::new($script:lang.enabled, "enabled"))) > $null
+    $attributes.Add(($description = [Attribute]::new($script:lang.description, "Description"))) > $null
+    $attributes.Add(($created = [Attribute]::new($script:lang.created, "created"))) > $null
+    if(!($this.isuser))
+    {
+        $attributes.Add(($os = [Attribute]::new($script:lang.os, "OperatingSystem"))) > $null
+        $attributes.Add(($computername = [Attribute]::new($script:lang.computername, "Name"))) > $null
+        $attributes.Add(($IPv4Address = [Attribute]::new($script:lang.IPv4Address, "IPv4Address"))) > $null
+        $attributes.Add(($logoncount = [Attribute]::new($script:lang.logoncount, "logoncount"))) > $null
+    }
+    else
+    {
+        $attributes.Add(($telnumber = [Attribute]::new($script:lang.telephoneNumber, "telephoneNumber"))) > $null
+        $attributes.Add(($company = [Attribute]::new($script:lang.Company, "Company"))) > $null
+        $attributes.Add(($department = [Attribute]::new($script:lang.department, "Department"))) > $null
+        $attributes.Add(($name = [Attribute]::new($script:lang.name, "Name"))) > $null
+        $attributes.Add(($logonWorkstation = [Attribute]::new($script:lang.logonWorkstation, "logonWorkstation"))) > $null
+        $attributes.Add(($mail = [Attribute]::new($script:lang.mail, "mail"))) > $null
+        $attributes.Add(($title = [Attribute]::new($script:lang.title, "title"))) > $null
+    }
+    }
+}
 
 # Filters. We need them only if we want to query more users, so they won't show up when querying one user
     if (!($issingle))
-    {
+    {        
         $filters = New-Object System.Collections.ArrayList($null)
         $filters.Add(($lastlogonfilter = [Filterpairs]::new(($active = "{LastLogonTimeStamp -gt $($time)}"),$lang.active_ones,($inactive = "{LastLogonTimeStamp -lt $($time)}"),$lang.inactive_ones))) > $null
         $filters.Add(($isenabled = [Filterpairs]::new(("{Enabled -eq True}"),$lang.enabled,($isdisabled = "{Enabled -eq False}"),$lang.disabled))) > $null
         $filters.Add(($oufilter = [OUfilter]::new())) > $null
     }
+
 ## Attributes
     $attributes = New-Object System.Collections.ArrayList($null)
     $attributes.Add(($lastlogon = [Attribute]::new($lang.last_logon, "LastLogonDate"))) > $null
@@ -296,7 +572,7 @@ function Queryfiltering {
         $attributes.Add(($IPv4Address = [Attribute]::new($lang.IPv4Address, "IPv4Address"))) > $null
         $attributes.Add(($logoncount = [Attribute]::new($lang.logoncount, "logoncount"))) > $null
     }
-    if($isuser)
+    else
     {
         $attributes.Add(($telnumber = [Attribute]::new($lang.telephoneNumber, "telephoneNumber"))) > $null
         $attributes.Add(($company = [Attribute]::new($lang.Company, "Company"))) > $null
@@ -308,20 +584,27 @@ function Queryfiltering {
     }
 
 
+
+
+Read-Host
     do
     {
-        Clear-Host
-        Write-Host "A kimenetben megjelenítendő attribútumok kiválasztása, eredmények szűrése`n"
+        #Clear-Host
+        if($isuser -and $issingle)
+        {
+            Write-Host $objname.Name $lang.user_is_being_queried
+        }
+        Write-Host $lang.attributes_and_filters"`n"
         if (!($issingle))
         {
-            Write-Host "Választható attribútumok`t`t`t`tVálasztható filterek"
+            Write-Host $("{0, -55} {1}" -f $lang.available_attribs, $lang.available_filters)
         }
         else
         {
-            Write-Host "Választható attribútumok"
+            Write-Host $lang.available_attribs
         }
         [array]$opciok = $null
-        [array]$functionexpl = ($lang.funcexptitle, <#$lang.custom_attrib_title, $lang.custom_filter_title,#> $lang.funchelp, $lang.funcfinish)
+        [array]$functionexplanation = ($lang.funcexptitle, $lang.custom_attrib_title, $lang.custom_filter_title, $lang.funchelp, $lang.funcfinish)
         $j = 0
         for ($i = 0; $i -lt $attributes.Count; $i++)
         {
@@ -331,10 +614,10 @@ function Queryfiltering {
                 $opciok += ($i +1)
                 $opciok += [Filterindex]$i
             }
-            elseif($i -gt ($attributes.Count-$functionexpl.count-1))
+            elseif($i -gt ($attributes.Count-$functionexplanation.count-1))
             {
                 Write-Host $attributes[$i].Out($i) -nonewline
-                Write-Host $functionexpl[$j] -ForegroundColor Gray
+                Write-Host $functionexplanation[$j] -ForegroundColor Gray
                 $j++
                 $opciok += ($i +1)
             }
@@ -365,12 +648,15 @@ function Queryfiltering {
                     }
                     catch
                     {
-                        $filters[[Filterindex]::$setter.value__].Set()
+                        $filters[[Filterindex]::$setter.value__].Set($isuser)
                     }
                 }
             }    
     }while($setter -ne "K")
-    
+  
+
+
+
     if ($lastlogonfilter.state -ne 0 -and $issingle -eq $false)
     {
         Write-Host $lang.youset_day_filter
@@ -391,7 +677,7 @@ function Queryfiltering {
 
     [string]$properties = "samAccountname"
     [string]$select = "@{n=$($lang.username); e='samAccountName'}"
-    [string]$filter
+    [string]$filter | Out-Null
     [string]$searchbase
 
     for($i = 0; $i -lt $attributes.Count; $i++)
@@ -403,9 +689,10 @@ function Queryfiltering {
             }
         }
     $filtercount = 0
+    $isoufiltered = $false
     for($i = 0; $i -lt $filters.Count; $i++)
     {
-        if($filters[$i].state -ne 0)
+        if($filters[$i].state -ne 0 -and $filters[$i].state -ne $false)
         {
             if ($filters[$i] -isnot "OUfilter")
             {
@@ -418,9 +705,10 @@ function Queryfiltering {
                     $filter += ", $($filters[$i].Outmethod())"
                 }
             }
-            elseif($filters[$i].setter -eq $true)
+            elseif($filters[$i].state -eq $true)
             {
                 $searchbase = "$($filters[$i].Outmethod())"
+                $isoufiltered = $true
                 $filtercount--
             }
             $filtercount++
@@ -431,6 +719,98 @@ function Queryfiltering {
         $filter = "*"
     }
 
-Write-Host "-Filter $filter -SearchBase $searchbase -Properties $properties | Select-Object $select"
-    Read-Host
+
+    if ($isuser)
+    {
+        if ($issingle)
+        {
+            $query = Get-ADUser $objname -Properties $properties | Select-Object $select
+        }
+        elseif (!($isoufiltered))
+        {            
+            $query = Get-ADUser -Filter $filter -Properties $properties | Select-Object $select
+        }
+        else 
+        {
+            $query = Get-ADUser -Filter $filter -SearchBase '$($searchbase)' -Properties $properties | Select-Object $select
+            Get-ADUser -Filter * -SearchBase 'OU=KTIK,OU=Users,OU=KCSK59,OU=KIT_Users_Groups,DC=stn,DC=hunmil,DC=local' -Properties samAccountname | Select-Object @{n="Felhasználónév"; e='samAccountName'}
+            $query
+        }
+
+    }
+    else 
+    {
+        if ($issingle)
+        {
+            Get-ADComputer $objname -Properties $properties | Select-Object $select
+        }
+        elseif (!($isoufiltered))
+        {
+            $query = Get-ADComputer -Filter $filter -Properties $properties | Select-Object $select
+        }
+        else 
+        {
+            $query = Get-ADComputer -Filter $filter -SearchBase $searchbase -Properties $properties | Select-Object $select
+        }
+    }
+    #>
+
+    $menu = [QueryFiltering]::new($true, $false, "valami", "valami")
+$menu.Menu()
+
+#Write-Host $query
+Read-Host
+<#$csvout = "$csvdir\$ounev-$($lang.last)-$napja-$($lang.days_active_pc).csv"
+CSVfunkciok $ment $csvout
+            Write-Host $lang.ou_whats_next
+            $kilep = Valaszt ("N", "Q", "R")#>
+#}
+
+class QueryType
+{
+    User()
+    {
+
+    }
 }
+function Userfunction
+{    
+    param($title, $functionname, $querytype)
+    $kilep
+    do # The main loop of this menu #
+    {
+        MenuTitle($title)
+        Write-Host $functionname
+        $objname = Read-Host -Prompt $lang.id
+       # $username = Letezike $username # It calls the function to check if the entered username exist
+            
+        $simpledetailed = Valaszt("1", "2")
+
+        if ($simpledetailed -eq "1")
+        {
+            $kilep = GroupsOfUser
+        }
+        else
+        {
+            $kilep = Queryfiltering $true $true $objname
+        }
+    } while ($kilep -eq "U")
+    return $kilep
+}
+
+
+class test
+{
+    [System.Object]micsoda()
+    {
+        return "visszatér"
+    }
+}
+
+$grgr = [test]::new()
+$a = $grgr.micsoda()
+
+Write-Host $a
+
+$csvinpath = "D:\TelHFKP.csv"
+        $incsv = Get-Content $csvinpath
