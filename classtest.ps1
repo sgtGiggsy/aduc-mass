@@ -1,7 +1,7 @@
 ﻿$lang = Get-Content ".\Languages\hun.lang" | Out-String | ConvertFrom-StringData
 #. .\aduc-mass.ps1
 
-
+<#
 function Valaszt
 {
     param($choice) # It receives an array of the possible choices, it's not fixed, so it doesn't matter if we have 2 allowed choices, or 30
@@ -273,7 +273,7 @@ class OUfilter
                         $vane = $false                        
                     }
                 }                    
-            } while ($vane -eq $false)#>
+            } while ($vane -eq $false)
             $this.state = $true
         }
     }
@@ -281,8 +281,8 @@ class OUfilter
     {
         if ($this.state)
         {
-            Write-Host $("({0}) Choosen OU: {1}" -f $char, $char <#$Script:ounev#>) -NoNewline
-            #Write-Host "Choosen OU: " <#$Script:ounev#> -NoNewline
+            Write-Host $("({0}) Choosen OU: {1}" -f $char, $char $Script:ounev) -NoNewline
+            #Write-Host "Choosen OU: " $Script:ounev -NoNewline
         }
         else 
         {
@@ -371,7 +371,7 @@ class QueryFiltering
                 Write-Host $script:lang.available_attribs
             }
             [array]$opciok = $null
-            [array]$functionexplanation = ($script:lang.funcexptitle, <#$lang.custom_attrib_title, $lang.custom_filter_title,#> $script:lang.funchelp, $script:lang.funcfinish)
+            [array]$functionexplanation = ($script:lang.funcexptitle, $lang.custom_attrib_title, $lang.custom_filter_title, $script:lang.funchelp, $script:lang.funcfinish)
             $j = 0
             for ($i = 0; $i -lt $this.attributes.Count; $i++)
             {
@@ -524,7 +524,7 @@ class QueryFiltering
     }
 }
 
-<### Attributes
+## Attributes
     $attributes = New-Object System.Collections.ArrayList($null)
     $attributes.Add(($lastlogon = [Attribute]::new($script:lang.last_logon, "LastLogonDate"))) > $null
     $attributes.Add(($enabled = [Attribute]::new($script:lang.enabled, "enabled"))) > $null
@@ -753,7 +753,7 @@ Read-Host
             $query = Get-ADComputer -Filter $filter -SearchBase $searchbase -Properties $properties | Select-Object $select
         }
     }
-    #>
+    
 
     $menu = [QueryFiltering]::new($true, $false, "valami", "valami")
 $menu.Menu()
@@ -763,7 +763,7 @@ Read-Host
 <#$csvout = "$csvdir\$ounev-$($lang.last)-$napja-$($lang.days_active_pc).csv"
 CSVfunkciok $ment $csvout
             Write-Host $lang.ou_whats_next
-            $kilep = Valaszt ("N", "Q", "R")#>
+            $kilep = Valaszt ("N", "Q", "R")
 #}
 
 class QueryType
@@ -814,3 +814,28 @@ Write-Host $a
 
 $csvinpath = "D:\TelHFKP.csv"
         $incsv = Get-Content $csvinpath
+        #>
+
+        $hibagyujt = @()
+        for ($i = 0; $i -lt 10; $i++)
+        {
+            for ($j = 1; $j -lt 10; $j++)
+            {
+                try
+                {
+                    set-ADUser -identity $ADUser -Replace @{$attribute[$j]=$values[$i][$j]}
+                }
+                catch
+                {
+                    $hibagyujt += New-Object PsObject -property @{'desc' = ("$i $($lang.for_the_user) nem műx")}
+                }   
+            }
+        }
+
+    $hibagyujt.Count
+   # $hibagyujt | Out-File -FilePath C:\Games\file.csv
+    $hibagyujt | export-csv -encoding unicode -path C:\Games\file.csv -NoTypeInformation -append
+    #for($i=0; $i -lt $hibagyujt.Count; $i++)
+    #{
+     #   Write-Host $hibagyujt[$i]
+    #}

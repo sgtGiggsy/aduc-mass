@@ -328,7 +328,6 @@ class QueryFiltering
         # Filters. We need them only if we want to query more users, so they won't show up when querying one user
         if (!($this.issingle))
         {        
-            "Meghivattam"
             $filters.Add(($script:lastlogonfilter = [Filterpairs]::new(($active = "{LastLogonTimeStamp -gt $($this.time)}"),$script:lang.active_ones,($inactive = "{LastLogonTimeStamp -lt $($this.time)}"),$script:lang.inactive_ones))) > $null
             $filters.Add(($isenabled = [Filterpairs]::new(("{Enabled -eq True}"),$script:lang.enabled,($isdisabled = "{Enabled -eq False}"),$script:lang.disabled))) > $null
             $filters.Add(($oufilter = [OUfilter]::new())) > $null
@@ -1225,11 +1224,11 @@ function MassModify
         ## Here we create the array that will store the attribute names
         $attribute = New-Object string[] $oszlopok.Length
 
+############################
+       <### 
         ## Second step, reading the contents of the file.
         ### To do that, first, we create a two-dimensional array by the number of lines, and number of rows in CSV
         $values = New-Object string[][] $incsv.Length, $oszlopok.Length
-        [array]$hibagyujt
-        ### 
         for ($i = 0; $i -lt $incsv.Length; $i++)
         {
             $valuesRAW = $incsv[$i].Split(";")
@@ -1247,25 +1246,52 @@ function MassModify
                     $values[$i][$j] = $valuesRAW[$j]
                 }
             }
-        }
+        }#>
+####### Kommentelt valószínű törlés
+
+
         $progressbar = 100 / $incsv.Length
         Write-Host $lang_progress
-        for ($i = 1; $i -lt $incsv.Length; $i++)
+        $hiba = @()
+        for ($i = 0; $i -lt $incsv.Length; $i++)
         {
-            $ADUser = $values[$i][0]
-            if ($ADUser -and (Get-ADUser -SearchBase $ou -Filter "samAccountName -eq '$ADUser'"))
+            $valuesRAW = $incsv[$i].Split(";")
+
+            if($i -eq 0)
             {
-                for ($j = 0; $j -lt $oszlopok.Length; $j++)
+                for ($j = 0; $j -lt $valuesRAW.Length; $j++)
                 {
-                    set-ADUser -identity $ADUser -Replace @{$attribute[$j]=$values[$i][$j]}
-                }                        
-                $percentage = [math]::Round($progressbar * ($i+1)) # To count the current percentage
-                Write-Host "`r$Percentage%" -NoNewline # To show the current percentage to the user, without putting it into a new line
+                    $attribute[$j] = $valuesRAW[$j]
+                }
             }
+          #  $ADUser = $values[$i][0]
+          #  if ($ADUser -and (Get-ADUser -SearchBase $ou -Filter "samAccountName -eq '$ADUser'"))
             else
             {
-                Write-Host "A(z) $($ADUser) felhasználó nem létezik, vagy nem a megadott OU-ban van!" -ForegroundColor Red
+                $ADUser = $valuesRAW[0]
+                if ($ADUser -and (Get-ADUser -SearchBase $ou -Filter "samAccountName -eq '$ADUser'"))
+                {
+                    for ($j = 1; $j -lt $oszlopok.Length; $j++)
+                    {
+                        try
+                        {
+                            Get-ADUser -identity $ADUser -Properties $attribute[$j] 
+                            Set-ADUser -identity $ADUser -Replace @{$attribute[$j]=$valuesRAW[$j]}
+                        }
+                        catch
+                        {
+                            $hiba += @{"$($lang.error_description)" = ("$($lang.the_given_csv) $attribute[$j] $($lang.the_attribute) $ADUser $($lang.for_the_user)")}
+                        }
+                    }                        
+                    $percentage = [math]::Round($progressbar * ($i+1)) # To count the current percentage
+                    Write-Host "`r$Percentage%" -NoNewline # To show the current percentage to the user, without putting it into a new line
+                }
+            
+            else
+            {
+                $hiba += @{"$($lang.error_description)" = ("$($lang.the) $ADUser $($lang.user_doesnt_exist) $ounev $($lang.not_in_the_ou)")}
             }
+        }
         }
         # To count one item means how much in percentage of the whole process
         Write-Host "`n$lang_ou_whats_next"
