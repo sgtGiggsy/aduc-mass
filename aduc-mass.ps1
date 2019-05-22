@@ -40,7 +40,7 @@ if (!(Get-Module -ListAvailable -Name ActiveDirectory))
 $admine = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
 if (!($admine.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)))
     {
-        #Clear-Host
+        Clear-Host
         $title = "$($lang.title_user)`n"
         Write-Host $title`n$($lang.warning)`n`n$($lang.warn_not_admin)`n$($lang.wont_have_rights)`n`n$($lang.run_anyway) -ForegroundColor Yellow
         $admin = $false
@@ -52,9 +52,10 @@ else
         $admin = $true
         $title
     }
+
 if ($config.savepath)
 {
-    $script:path = $config.path
+    $script:path = $config.savepath
 }
 else
 {
@@ -359,7 +360,7 @@ class QueryFiltering
     {
         do
         {
-            #Clear-Host
+            Clear-Host
             if($this.isuser -and $this.issingle)
             {
                 Write-Host $this.objname.Name $script:lang.user_is_being_queried
@@ -427,10 +428,10 @@ class QueryFiltering
 
     Output()
     {
-        [string]$properties = "samAccountname"
-        [string]$select = "@{n='$($script:lang.username)'; e='samAccountName'}"
-        [string]$filter = $null | Out-Null
-        [string]$searchbase = $null
+        $properties = "samAccountname"
+        $select = "@{n='$($script:lang.username)'; e='samAccountName'}"
+        $filter = $null | Out-Null
+        $searchbase = $null
         $time = $null
         
         if ($script:lastlogonfilter.state -ne 0 -and $this.issingle -eq $false)
@@ -455,8 +456,8 @@ class QueryFiltering
         {
             if($this.attributes[$i].setter)
             {
-                $properties += ", $($this.attributes[$i].attribute)"
-                $select += ", $($this.attributes[$i].outmethod)"
+                $properties = $properties + ", " + $this.attributes[$i].attribute
+                $select = $select + ", " + $this.attributes[$i].outmethod
             }
         }
 
@@ -470,11 +471,11 @@ class QueryFiltering
                 {
                     if($filtercount -eq 0)
                     {
-                        $filter += "$($this.filters[$i].Outmethod())"
+                        $filter = $filter + $this.filters[$i].Outmethod()
                     }
                     else
                     {
-                        $filter += ", $($this.filters[$i].Outmethod())"
+                        $filter = $filter + "-and " + $this.filters[$i].Outmethod()
                     }
                 }
                 elseif($this.filters[$i].state -eq $true)
@@ -495,33 +496,34 @@ class QueryFiltering
         {
             if ($this.issingle)
             {
-                Write-Host "Get-ADUser $this.objname -Properties $properties | Select-Object $select"
+                $script:query = "Get-ADUser $($this.objname) -Properties $properties | Select-Object $select"
             }
             elseif (!($isoufiltered))
             {
-                Write-Host "Get-ADUser -Filter $filter -Properties $properties | Select-Object $select"
+                $script:query = "Get-ADUser -Filter $filter -Properties $properties | Select-Object $select"
             }
             else 
             {
-                Write-Host "Get-ADUser -Filter $filter -SearchBase '$($searchbase)' -Properties $properties | Select-Object $select"
+                $script:query = "Get-ADUser -Filter $filter -SearchBase '$($searchbase)' -Properties $properties | Select-Object $select"
             }
         }
         else 
         {
             if ($this.issingle)
             {
-                Write-Host "$this.objname -Properties $properties | Select-Object $select"
+                $script:query = "$this.objname -Properties $properties | Select-Object $select"
             }
             elseif (!($isoufiltered))
             {
-                Write-Host "Get-ADComputer -Filter $filter -Properties $properties | Select-Object $select"
+                $script:query = "Get-ADComputer -Filter $filter -Properties $properties | Select-Object $select"
             }
             else 
             {
-                Write-Host "Get-ADComputer -Filter $filter -SearchBase $searchbase -Properties $properties | Select-Object $select"
+                $script:query = "Get-ADComputer -Filter $filter -SearchBase $searchbase -Properties $properties | Select-Object $select"
             }
         }
-        Read-Host
+        Write-Host $script:query
+        Invoke-Expression  $script:query | export-csv -Encoding Unicode -path D:\file.csv -NoTypeInformation
     }
 }
 
@@ -786,7 +788,8 @@ function CSVdir
     }
     return $csvpath
 }
-function MenuTitle {
+function MenuTitle 
+{
     param ($menuname)
     Clear-Host
     Write-Host "$($title)$($menuname)`n"
@@ -1095,13 +1098,20 @@ function ADUserFunctions
     do # The main loop of this menu #
     {
                    
+        Write-Host "1 groupsofuser`n2 AllusersfromOU`n3 Queryfilter"
         $simpledetailed = Valaszt("1", "2", "3")
 
         switch($simpledetailed)
         {
             1 { $kilep = GroupsOfUser }
             2 { $kilep = AllUsersFromOU }
-            3 { $kilep = Queryfiltering $true $true $title $objname }
+            3 { $menu = [QueryFiltering]::new($true, $true, $lang.all_computers_of_ou, "kb158a7h")
+                do
+                {
+                    $menu.Menu()
+                    $menu.Output()
+                    $kilep = AfterProcess
+                } while($kilep -eq "R") }
         }
     } while ($kilep -eq "U")
     return $kilep
@@ -1151,9 +1161,17 @@ function AllUsersFromOU
     } while ($kilep -eq "R")
 }
 
+# Without a doubt the most dangerous part of the program at the moment. It must be used with extreme caution, as it can change
+# the attributes of every single user we have authority over in a few seconds. To make the changes reversable,
+# I implemented a save feature, that saves the old attributes into a csv file before making the changes. To make it even more secure,
+# the changes are saved line by line, so even if the script stops running at one point, there will be a backup about the already
+# applied changes. As far as I can tell, it's as secure as it possibly can be.
+#
+# It also creates a logfile about the changes it couldn't make for some reason. It works a little less precisely at the moment,
+# but it gives an overview about the unsuccesful tasks.
 function MassModify
 {
-    # It needs to be optimized, as right now the algorythm works, but not as efficiently, as it could
+    # Maybe it could still be optimized a bit, but it works as efficiently, as I could write it now
     do
     {
         # Warnings
@@ -1168,9 +1186,7 @@ function MassModify
         do
         {
             Write-Host $lang_all_users_of_ou
-            $eredetiou = Read-Host -Prompt $lang_enter_ou
-
-            $ou = OUcheck $eredetiou # It calls the function to check if the entered OU exist
+            $ou = OUcheck # It calls the function to check if the entered OU exist
             $ounev = $Script:ounev # It calls the $script:ounev variable from OUcheck function, so we could create separate folders by OUs
                 
             $vane = $true
@@ -1205,97 +1221,93 @@ function MassModify
 
 # Modify 
 
-        # Last confirmation about the process
+        # Last confirmation about the process, after this, the program will run
         Write-Host $lang.last_warning "`n" -ForegroundColor Red
         Write-Host $lang.the $csvinpath $lang.will_be_used_to_modify $eredetiou $lang.modify_all_users_of_ou "`n" -ForegroundColor Red
         Write-Host $lang.enter_yes -ForegroundColor Red
         $confirm = Read-Host -Prompt $lang.enter_string
-        if ($confirm -ne $lang.yes) # The program won't go further, unless the users types "yes"
+        if ($confirm -ne $lang.yes) # The program won't go further, unless the users types "yes" in their language.
         {
             Break
         }
 
         # The actual process
-        ## First step, getting the number of columns, to know the x size of the array
+        ## First step, getting the number of columns. It probably can be done a little more sophisticated. 
         for ($i = 0; $i -lt 1; $i++)
         {
-            $oszlopok = $incsv[$i].Split(";")
+            $oszlopok = $incsv[$i].Split("$($lang.delimiter)")
         }
+
         ## Here we create the array that will store the attribute names
         $attribute = New-Object string[] $oszlopok.Length
-
-############################
-       <### 
-        ## Second step, reading the contents of the file.
-        ### To do that, first, we create a two-dimensional array by the number of lines, and number of rows in CSV
-        $values = New-Object string[][] $incsv.Length, $oszlopok.Length
-        for ($i = 0; $i -lt $incsv.Length; $i++)
-        {
-            $valuesRAW = $incsv[$i].Split(";")
-            if($i -eq 0)
-            {
-                for ($j = 0; $j -lt $valuesRAW.Length; $j++)
-                {
-                    $attribute[$j] = $valuesRAW[$j]
-                }
-            }
-            else 
-            {
-                for ($j = 0; $j -lt $valuesRAW.Length; $j++)
-                {
-                    $values[$i][$j] = $valuesRAW[$j]
-                }
-            }
-        }#>
-####### Kommentelt valószínű törlés
-
-
-        $progressbar = 100 / $incsv.Length
+        $progressbar = 100 / $incsv.Length ## Progressbar, so the user knows how far they are in the process.
         Write-Host $lang_progress
-        $hiba = @()
+        
+        $hiba = @() ## Array to store the errors, instead of outputting them realtime on the console
+        $firstuser = $true ## We will need this variable for saving the backup CSV
+        $random = Get-Random ## This random number is used in naming the CSVs, to avoid accidental overwrites.
         for ($i = 0; $i -lt $incsv.Length; $i++)
         {
-            $valuesRAW = $incsv[$i].Split(";")
-
+            $value = $incsv[$i].Split("$($lang.delimiter)") # We split the rows by the delimiter we set in the language file
+            $backup = New-Object PsObject ## This array will store the old values from before we make the change on them
+            
+            # This loop is to get the attribute names from the header of the CSV
             if($i -eq 0)
             {
-                for ($j = 0; $j -lt $valuesRAW.Length; $j++)
+                for ($j = 0; $j -lt $value.Length; $j++)
                 {
-                    $attribute[$j] = $valuesRAW[$j]
+                    $attribute[$j] = $value[$j]
                 }
             }
-          #  $ADUser = $values[$i][0]
-          #  if ($ADUser -and (Get-ADUser -SearchBase $ou -Filter "samAccountName -eq '$ADUser'"))
             else
             {
-                $ADUser = $valuesRAW[0]
+                $ADUser = $value[0] # For now, the program works only, if samAccountName is the first column of the table.
+                # As a security measure, we change users only from the chosen Organizational Unit, and from nowhere else,
+                # even if the user exist in another OU.
                 if ($ADUser -and (Get-ADUser -SearchBase $ou -Filter "samAccountName -eq '$ADUser'"))
                 {
-                    for ($j = 1; $j -lt $oszlopok.Length; $j++)
+                    for ($j = 1; $j -lt $oszlopok.Length; $j++) # We step through the columns one by one
                     {
                         try
                         {
-                            Get-ADUser -identity $ADUser -Properties $attribute[$j] 
-                            Set-ADUser -identity $ADUser -Replace @{$attribute[$j]=$valuesRAW[$j]}
+                            $attribbackup = Get-ADUser -identity $ADUser -Properties $attribute[$j] | Select-Object $attribute[$j] # Backup step 1: getting the value of the attribute
+                            $backup | add-member -membertype NoteProperty -name "$($attribute[$j])" -Value "$($attribbackup.($attribute[$j]))" # Backup step 2: Putting the value in the backup array object
+                            Set-ADUser -identity $ADUser -Replace @{$attribute[$j]=$value[$j]} # The main part of the whole function. This changes the value of the chosen attribute.
                         }
                         catch
                         {
-                            $hiba += @{"$($lang.error_description)" = ("$($lang.the_given_csv) $attribute[$j] $($lang.the_attribute) $ADUser $($lang.for_the_user)")}
+                            #$hiba += @("$($lang.the_given_csv) $attribute[$j] $($lang.the_attribute) $ADUser $($lang.for_the_user)") 
+                            # Exception catch 2: It tells the user if an attribute is cannot be changed for some reason. As for now it doesn't differenciate
+                            # if the user doesn't have sufficient right to change the value, or the CSV file didn't have value for the attribute.
+                            $hiba += New-Object PsObject -property @{"$($lang.error_description)" = ("$($lang.the_given_csv) $attribute $($lang.the_attribute) $ADUser $($lang.for_the_user)")}
                         }
-                    }                        
-                    $percentage = [math]::Round($progressbar * ($i+1)) # To count the current percentage
+                    }
+                    if($firstuser) # We need separate command for the first time, when we create the CSV file
+                    {
+                        $backup | export-csv -encoding unicode -path "$script:path\backup-$random.csv" -NoTypeInformation
+                        $firstuser = $false # We don't need this branch of the if-else anymore, so set the variable false.
+                    }
+                    else
+                    {
+                        $backup | export-csv -encoding unicode -path "$script:path\backup-$random.csv" -NoTypeInformation -Append
+                    }
+
+                    $percentage = [math]::Round($progressbar * ($i+1)) # To count the current percentage, it doesn't work properly, at the moment, and there are way more important things to fix than this.
                     Write-Host "`r$Percentage%" -NoNewline # To show the current percentage to the user, without putting it into a new line
                 }
             
-            else
-            {
-                $hiba += @{"$($lang.error_description)" = ("$($lang.the) $ADUser $($lang.user_doesnt_exist) $ounev $($lang.not_in_the_ou)")}
+                else
+                {
+                    #$hiba += @("$($lang.the) $ADUser $($lang.user_doesnt_exist) $ounev $($lang.not_in_the_ou)")
+                    # Exception catch 1: It tells the user if the user they want to change doesn't exist, or isn't in the chosen OU
+                    $hiba += New-Object PsObject -property @{"$($lang.error_description)" = ("$($lang.the) $ADUser $($lang.user_doesnt_exist) $ounev $($lang.not_in_the_ou)")}
+                }
             }
         }
-        }
-        # To count one item means how much in percentage of the whole process
-        Write-Host "`n$lang_ou_whats_next"
-        $kilep = Valaszt ("N", "Q", "R")
+
+        $hiba | export-csv -encoding unicode -path "$script:path\hibajegy-$random.csv" -NoTypeInformation
+
+        $kilep = AfterProcess
     } while ($kilep -eq "R")
 }
 
@@ -1309,9 +1321,9 @@ do
     Write-Host "(1) $($lang.users_of_group)"
     Write-Host "(2) $($lang.memberships_of_user)"
     Write-Host "(3) $($lang.users_of_all_groups_ou)"
-    Write-Host "(4) $($lang.all_computers_of_ou)"
-    Write-Host "(5) $($lang.all_users_of_ou)"
-    Write-Host "(6) $($lang.memberships_of_all_users_ou)"
+    Write-Host "(4) $($lang.memberships_of_all_users_ou)"
+    Write-Host "(5) $($lang.all_computers_of_ou)"
+    Write-Host "(6) $($lang.all_users_of_ou)"
     Write-Host "(7) $($lang.dangerzone)" -ForegroundColor Red
     Write-Host "(S) $($lang.change_save_root)"
     Write-Host "`n$($lang.old_path) $script:path"
@@ -1334,6 +1346,10 @@ do
             $kilep = GroupsOfOU
         }
 
+    4
+        {
+            
+        }
 
     5 # All PCs of a certain OU, filtered or not filtered by recent activity #
         {
@@ -1345,12 +1361,6 @@ do
                 $menu.Output()
                 $kilep = AfterProcess
             } while($kilep -eq "R")
-
-            <# $kilep = Queryfiltering $true $true $title $objname
-                CSVfunkciok $ment $csvout
-                Write-Host $lang.ou_whats_next
-                $kilep = Valaszt ("N", "Q", "R")
-            } while ($kilep -eq "R")#>
         }
 
     6 # All Users of an OU, filtered or not filtered by their activity #

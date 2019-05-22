@@ -814,7 +814,7 @@ Write-Host $a
 
 $csvinpath = "D:\TelHFKP.csv"
         $incsv = Get-Content $csvinpath
-        #>
+        
 
         $hibagyujt = @()
         for ($i = 0; $i -lt 10; $i++)
@@ -839,3 +839,45 @@ $csvinpath = "D:\TelHFKP.csv"
     #{
      #   Write-Host $hibagyujt[$i]
     #}
+
+
+
+    $attr = Get-ADUser kb158a7h -Properties telephoneNumber | Select-Object telephoneNumber
+    Write-host $attr.telephoneNumber
+    
+#>
+    $incsv = Get-Content "C:\Games\backup.csv"
+$lang.delimiter = ","
+$lang.delimiter
+    for ($i = 0; $i -lt 1; $i++)
+        {
+            $oszlopok = $incsv[$i].Split("$($lang.delimiter)")
+        }
+    $attribute = New-Object string[] $oszlopok.Length
+    $backupvalues = New-Object string[] $oszlopok.Length
+
+    for ($i = 0; $i -lt $incsv.Length; $i++)
+    {
+        $valuesRAW = $incsv[$i].Split("$($lang.delimiter)")
+        $backup = New-Object PsObject
+        for ($j = 0; $j -lt $valuesRAW.Length; $j++)
+        {
+            if($i -eq 0)
+            {
+                $backupvalues[$j] = $valuesRAW[$j]
+            }
+            else
+            {               
+                $backup | add-member -membertype NoteProperty -name "$($backupvalues[$j])" -Value "$($valuesRAW[$j])"
+            }
+        }
+        if($i -gt 1)
+        {
+            $backup | export-csv -encoding unicode -path C:\Games\backu.csv -NoTypeInformation -Append
+        }
+        else
+        {
+            $backup | export-csv -encoding unicode -path C:\Games\backu.csv -NoTypeInformation
+        }
+    }
+
