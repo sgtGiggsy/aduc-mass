@@ -395,7 +395,7 @@ class QueryFiltering
         if (!($this.issingle))
         {        
             $filters.Add(($script:lastlogonfilter = [Filterpairs]::new(($active = "{LastLogonTimeStamp -gt $($this.time)}"),$script:lang.active_ones,($inactive = "{LastLogonTimeStamp -lt $($this.time)}"),$script:lang.inactive_ones))) > $null
-            $filters.Add(($isenabled = [Filterpairs]::new(("{Enabled -eq True}"),$script:lang.enabled,($isdisabled = "{Enabled -eq False}"),$script:lang.disabled))) > $null
+            $filters.Add(($isenabled = [Filterpairs]::new(('Enabled -eq "True"'),$script:lang.enabled,($isdisabled = 'Enabled -eq "False"'),$script:lang.disabled))) > $null
             $filters.Add(($script:oufilter = [OUfilter]::new())) > $null
         }
         $attributes.Add(($lastlogon = [Attribute]::new($script:lang.last_logon, "LastLogonDate"))) > $null
@@ -529,8 +529,8 @@ class QueryFiltering
         }
         $filter = $null
         $searchbase = $null
-        $time = $null
         $napja = $null
+        $time = $null
 
 # In case we selected a filter about activity, this part asks how many days we want to query.
         if ($script:lastlogonfilter.state -ne 0 -and $this.issingle -eq $false)
@@ -548,8 +548,9 @@ class QueryFiltering
                 }
             } while(!($napja -is [int32]))
             $time = (Get-Date).Adddays(-($napja))
-            $script:lastlogonfilter.trueside = "{LastLogonTimeStamp -gt `$time}"
-            $script:lastlogonfilter.falseside = "{LastLogonTimeStamp -lt `$time}"
+            $script:time = $time
+            $script:lastlogonfilter.trueside = "LastLogonTimeStamp -gt `$time"
+            $script:lastlogonfilter.falseside = "LastLogonTimeStamp -lt `$time"
         }
 
         for($i = 0; $i -lt $this.attributes.Count; $i++)
@@ -575,7 +576,7 @@ class QueryFiltering
                     }
                     else
                     {
-                        $filter = $filter + "-and " + $this.filters[$i].Outmethod()
+                        $filter = $filter + " -and " + $this.filters[$i].Outmethod()
                     }
                 }
                 elseif($this.filters[$i].state -eq $true)
@@ -601,11 +602,11 @@ class QueryFiltering
             }
             elseif (!($isoufiltered))
             {
-                $script:query = "Get-ADUser -Filter $filter -Properties $properties | Select-Object $select"
+                $script:query = "Get-ADUser -Filter '$filter' -Properties $properties | Select-Object $select"
             }
             else 
             {
-                $script:query = "Get-ADUser -Filter $filter -SearchBase '$($searchbase)' -Properties $properties | Select-Object $select"
+                $script:query = "Get-ADUser -Filter '$filter' -SearchBase '$($searchbase)' -Properties $properties | Select-Object $select"
             }
         }
         else 
@@ -616,14 +617,13 @@ class QueryFiltering
             }
             elseif (!($isoufiltered))
             {
-                $script:query = "Get-ADComputer -Filter $filter -Properties $properties | Select-Object $select"
+                $script:query = "Get-ADComputer -Filter '$filter' -Properties $properties | Select-Object $select"
             }
             else 
             {
-                $script:query = "Get-ADComputer -Filter $filter -SearchBase '$($searchbase)' -Properties $properties | Select-Object $select"
+                $script:query = "Get-ADComputer -Filter '$filter' -SearchBase '$($searchbase)' -Properties $properties | Select-Object $select"
             }
         }
-        Write-Host $script:query
         return $script:query # | Out-String # | export-csv -Encoding Unicode -path D:\file.csv -NoTypeInformation
     }
 }
@@ -898,95 +898,98 @@ function UsersOfGroup
 # This menu is for collecting all users of a group, and outputting them on console,
 # saving them in a csv, or copying them to another group.
 # Parts of it need minor rewriting to be more efficient, and less cluttered.
-    MenuTitle($lang.users_of_group) 
-    Write-Host $lang.enter_group_name
-    $csopnev = Read-Host -Prompt $lang.id
-    $csopnev = Letezike $csopnev # It calls the function to check if the entered groupname exist
-
-    # We get here if we want to do different tasks with the group #
     do
-    {                       
-        MenuTitle($lang.users_of_group)
-        Write-Host $lang.i_found $csopnev $lang.the_group "`n" -ForegroundColor Green
-        Write-Host $lang.whats_next
-        Write-Host "(1) $($lang.whats_next_outconsole)"
-        Write-Host "(2) $($lang.whats_next_savecsv)"
-        if ($admin)
-        {
-            Write-Host "(3) $($lang.whats_next_group_copy_users)"
-            $kiir = Valaszt ("1", "2", "3")
-        }
-        else
-        {
-            $kiir = Valaszt ("1", "2")
-        }
+    {
+        MenuTitle($lang.users_of_group) 
+        Write-Host $lang.enter_group_name
+        $csopnev = Read-Host -Prompt $lang.id
+        $csopnev = Letezike $csopnev # It calls the function to check if the entered groupname exist
 
-        $result = Get-ADGroupMember -identity $csopnev | Get-ADObject -Properties description, samAccountName | select @{n=$lang.name; e='name'}, @{n=$lang.description; e='description'}, @{n=$lang.username; e='samAccountName'}
-        switch ($kiir)
-        {
-            1 # Write users of the group on console #
-                {
-                    $kiirat = $result | Out-String
-                    Write-Host $kiirat
-                    $kilep = AfterProcess
-                }
-            2 # Save users of the group in a csv #
-                {
-                    $csvout = [CSV]::new($lang.groups, $csopnev)
-                    $csvout.Create($result, $false)
-                    $kilep = AfterProcess
-                }
-            3 # Add users to another group #
-                {
-                    # Inner loop. We repeat this, if we want to add the contents of the group to another group #
-                    do
+        # We get here if we want to do different tasks with the group #
+        do
+        {                       
+            MenuTitle($lang.users_of_group)
+            Write-Host $lang.i_found $csopnev $lang.the_group "`n" -ForegroundColor Green
+            Write-Host $lang.whats_next
+            Write-Host "(1) $($lang.whats_next_outconsole)"
+            Write-Host "(2) $($lang.whats_next_savecsv)"
+            if ($admin)
+            {
+                Write-Host "(3) $($lang.whats_next_group_copy_users)"
+                $kiir = Valaszt ("1", "2", "3")
+            }
+            else
+            {
+                $kiir = Valaszt ("1", "2")
+            }
+
+            $result = Get-ADGroupMember -identity $csopnev | Get-ADObject -Properties description, samAccountName | select @{n=$lang.name; e='name'}, @{n=$lang.description; e='description'}, @{n=$lang.username; e='samAccountName'}
+            switch ($kiir)
+            {
+                1 # Write users of the group on console #
                     {
-                        $kitol = Get-ADGroup $csopnev                                        
-                        MenuTitle($lang.users_of_group)
-                        Write-Host $lang.group_members_copy_the $kitol.name $lang.group_members_copy "`n"
-                        Write-Host $lang.enter_target_group
-                        $newgroup = Read-Host -Prompt $lang.group_name
-                        $newgroup = Letezike $newgroup
-
-                        # The process of adding the members to the other group #
-                        [array]$members = Get-ADGroupMember $csopnev;
-                        $kihez = Get-ADGroup $newgroup                    
-                        MenuTitle($lang.users_of_group)
-                        Write-Host $kitol.Name $lang.group_members_copying $kihez.Name $lang.to_group
-
-                        $elemszam = $members.Count
-
-                        for ($i=0; $i -lt $elemszam; $i++)
-                        {
-                            # Catch exceptions #
-                            try
-                            {
-                                Add-ADGroupMember -Identity $newgroup -Members $members[$i]
-                                Write-Host "`r$i/"$elemszam $lang.copy_of -NoNewline
-                            }
-                            catch
-                            {                                    
-                                $hiba = $true
-                                break # If we can't add people to the group, it makes no sense trying with all of them, so we jump out of the loop
-                            }
-                        }
-                        # After the process is finished, notify the user of the unsuccesful task.
-                        # As we tried to modify only one group, we were able to either add all users, or none
-                        # Output in the case of an unsuccesful task #                                    
-                        MenuTitle($lang.users_of_group)
-                        if ($hiba -eq $true)
-                        {
-                            Write-Host "`n$($lang.task_unsuccesful)`n" -ForegroundColor Red
-                            Write-Host $lang.you_have_no_rights $kihez.Name $lang.to_modify_group -ForegroundColor Red
-                        }
-                        else
-                        {
-                            Write-Host $lang.task_fully_succesful -ForegroundColor Green
-                        }
+                        $kiirat = $result | Out-String
+                        Write-Host $kiirat
                         $kilep = AfterProcess $true
-                    } while ($kilep -eq $lang.char_repeat)                    
-                }
-        }
+                    }
+                2 # Save users of the group in a csv #
+                    {
+                        $csvout = [CSV]::new($lang.groups, $csopnev)
+                        $csvout.Create($result, $false)
+                        $kilep = AfterProcess $true
+                    }
+                3 # Add users to another group #
+                    {
+                        # Inner loop. We repeat this, if we want to add the contents of the group to another group #
+                        do
+                        {
+                            $kitol = Get-ADGroup $csopnev                                        
+                            MenuTitle($lang.users_of_group)
+                            Write-Host $lang.group_members_copy_the $kitol.name $lang.group_members_copy "`n"
+                            Write-Host $lang.enter_target_group
+                            $newgroup = Read-Host -Prompt $lang.group_name
+                            $newgroup = Letezike $newgroup
+
+                            # The process of adding the members to the other group #
+                            [array]$members = Get-ADGroupMember $csopnev;
+                            $kihez = Get-ADGroup $newgroup                    
+                            MenuTitle($lang.users_of_group)
+                            Write-Host $kitol.Name $lang.group_members_copying $kihez.Name $lang.to_group
+
+                            $elemszam = $members.Count
+
+                            for ($i=0; $i -lt $elemszam; $i++)
+                            {
+                                # Catch exceptions #
+                                try
+                                {
+                                    Add-ADGroupMember -Identity $newgroup -Members $members[$i]
+                                    Write-Host "`r$i/"$elemszam $lang.copy_of -NoNewline
+                                }
+                                catch
+                                {                                    
+                                    $hiba = $true
+                                    break # If we can't add people to the group, it makes no sense trying with all of them, so we jump out of the loop
+                                }
+                            }
+                            # After the process is finished, notify the user of the unsuccesful task.
+                            # As we tried to modify only one group, we were able to either add all users, or none
+                            # Output in the case of an unsuccesful task #                                    
+                            MenuTitle($lang.users_of_group)
+                            if ($hiba -eq $true)
+                            {
+                                Write-Host "`n$($lang.task_unsuccesful)`n" -ForegroundColor Red
+                                Write-Host $lang.you_have_no_rights $kihez.Name $lang.to_modify_group -ForegroundColor Red
+                            }
+                            else
+                            {
+                                Write-Host $lang.task_fully_succesful -ForegroundColor Green
+                            }
+                            $kilep = AfterProcess $true
+                        } while ($kilep -eq $lang.char_repeat)                    
+                    }
+            }
+        } while ($kilep -eq $lang.char_repeat)
     } while ($kilep -eq $lang.char_new_proc)
     return $kilep
 }
@@ -1020,7 +1023,7 @@ function SingleUser
             {
                 $menu = [QueryFiltering]::new($true, $true, $lang.memberships_of_user, $username)
                 $menu.Menu()
-                $result = invoke-expression $menu.Output()
+                $result = invoke-expression $menu.Output() -Verbose
             }
 
             Write-Host "`n$($lang.what_do_you_want_with_results)"
