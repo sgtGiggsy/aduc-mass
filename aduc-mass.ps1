@@ -123,6 +123,7 @@ class CSV
     $csvdir
     $outfile
     $out
+    $csvpath
     CSV($csvdir, $outfile)
     {
         $this.csvdir = $csvdir
@@ -137,17 +138,21 @@ class CSV
 
     DirectoryFunctions()
     {
-        $csvpath = "$script:path\$($this.csvdir)"
-        if(!(Test-Path -Path $csvpath))
+        $this.csvpath = "$script:path\$($this.csvdir)"
+        if(!(Test-Path -Path $this.csvpath))
         {
             try 
             {
-                New-Item -ItemType directory -Path $csvpath | Out-Null    
+                New-Item -ItemType directory -Path $this.csvpath | Out-Null    
             }
             catch
             {
                 Write-Host $script:lang.directory_cant_be_created -ForegroundColor Red    
             }
+        }
+        if ($this.outfile)
+        {
+            $this.out = "$($this.csvpath)\$($this.outfile).csv"
         }
     }
 
@@ -184,12 +189,17 @@ class CSV
             {
                 Write-Host "`n$($script:lang.file_is_created)" $this.out -ForegroundColor Green
             }
-            "sep=,`n"+(Get-Content $this.out -Raw) | Set-Content $this.out            
+            $this.Separator()
         }
     }
     Append($bemenet)
     {
         $bemenet | export-csv -encoding unicode -path $this.out -NoTypeInformation -Append
+    }
+
+    Separator()
+    {
+        "sep=,`n"+(Get-Content $this.out -Raw) | Set-Content $this.out
     }
 }
 
@@ -357,6 +367,9 @@ class OUfilter
 
 class QueryFiltering
 {
+# This class is responsible for selective querying. We can select which attributes we want to show in the output,
+# and which OU we want to query. It's rather detailed, and mostly works, but there is some problem with the
+# result filtering at the moment. I'm working on it.
     $isuser
     $issingle
     $menutitle
@@ -376,13 +389,14 @@ class QueryFiltering
     }
 
     Paramlist($filters, $attributes)
+# This method creates the arrays with the selectable attributes as objects in it.
     {        
         # Filters. We need them only if we want to query more users, so they won't show up when querying one user
         if (!($this.issingle))
         {        
             $filters.Add(($script:lastlogonfilter = [Filterpairs]::new(($active = "{LastLogonTimeStamp -gt $($this.time)}"),$script:lang.active_ones,($inactive = "{LastLogonTimeStamp -lt $($this.time)}"),$script:lang.inactive_ones))) > $null
             $filters.Add(($isenabled = [Filterpairs]::new(("{Enabled -eq True}"),$script:lang.enabled,($isdisabled = "{Enabled -eq False}"),$script:lang.disabled))) > $null
-            $filters.Add(($oufilter = [OUfilter]::new())) > $null
+            $filters.Add(($script:oufilter = [OUfilter]::new())) > $null
         }
         $attributes.Add(($lastlogon = [Attribute]::new($script:lang.last_logon, "LastLogonDate"))) > $null
         $attributes.Add(($enabled = [Attribute]::new($script:lang.enabled, "enabled"))) > $null
@@ -407,8 +421,10 @@ class QueryFiltering
     }
 
     Menu()
+# This method is responsible for showing the attribute, and filter slection menu, and also it calls the methods
+# the other classes on the attribute and filter objects.
     {
-        $ouisset = $false
+        $ouisset = $true
         do
         {
             do
@@ -451,7 +467,7 @@ class QueryFiltering
                         $opciok += ($i +1)
                     }
                 }
-                $opciok += "K"
+                $opciok += $script:lang.char_finalize
                 $opciok += "H"
                 $opciok += $script:lang.attribute
                 $opciok += $script:lang.filter
@@ -476,13 +492,16 @@ class QueryFiltering
                             }
                         }
                     }    
-            }while($this.setter -ne "K")
-            if (!($ouisset))
+            }while($this.setter -ne $script:lang.char_finalize)
+# This stops us from continue if we didn't set the OU filter. On larger Active Directories
+# a query on all AD objects can take long, so this confirmation makes sure, if we really
+# want to query the whole AD.
+            if (!($script:oufilter.state) -and !($this.issingle))
             {
                 Write-Host $script:lang.confirm_without_ou -ForegroundColor DarkYellow
                 Write-Host $script:lang.search_will_be_on_whole_ad -ForegroundColor DarkYellow
                 Write-Host "($($script:lang.char_yes)) $($script:lang.yes)`n($($script:lang.char_no)) $($script:lang.no)"
-                $confirm = Valaszt $script:lang.char_yes $script:lang.char_no
+                $confirm = Valaszt ("$($script:lang.char_yes)", "$($script:lang.char_no)")
                 if($confirm -eq $script:lang.char_yes)
                 {
                     $ouisset = $true
@@ -496,6 +515,7 @@ class QueryFiltering
     }
 
     [string]Output()
+# This method is responsible for creating the query string.
     {
         if ($this.isuser)
         {
@@ -507,11 +527,12 @@ class QueryFiltering
             $properties = "Name"
             $select = "@{n='$($script:lang.computername)'; e='Name'}"
         }
-        $filter = $null | Out-Null
+        $filter = $null
         $searchbase = $null
         $time = $null
         $napja = $null
-        
+
+# In case we selected a filter about activity, this part asks how many days we want to query.
         if ($script:lastlogonfilter.state -ne 0 -and $this.issingle -eq $false)
         {
             Write-Host $script:lang.youset_day_filter
@@ -527,8 +548,8 @@ class QueryFiltering
                 }
             } while(!($napja -is [int32]))
             $time = (Get-Date).Adddays(-($napja))
-            $script:lastlogonfilter.trueside = "{LastLogonTimeStamp -gt $time}"
-            $script:lastlogonfilter.falseside = "{LastLogonTimeStamp -lt $time}"
+            $script:lastlogonfilter.trueside = "{LastLogonTimeStamp -gt `$time}"
+            $script:lastlogonfilter.falseside = "{LastLogonTimeStamp -lt `$time}"
         }
 
         for($i = 0; $i -lt $this.attributes.Count; $i++)
@@ -571,6 +592,7 @@ class QueryFiltering
             $filter = "*"
         }
 
+# Now we create the query string from the collected attributes and filters.
         if ($this.isuser)
         {
             if ($this.issingle)
@@ -623,10 +645,10 @@ function Timestamp
 #-#-#                                                                                      #-#-#
 #-#-#       These are the functions that check, or modify the objects we work with.        #-#-#
 
-# Function to translate the traditional Domain/Organizational Unit form into the DistinguishedName
-# that's needed to filter queries on a certain OU.
 function OUnevfordito
 {
+# Function to translate the traditional Domain/Organizational Unit form into the DistinguishedName
+# that's needed to filter queries on a certain OU.
     param($bemenet) #OU name in the form you can find it in ADUC
     $kimenet = $bemenet.Split("/") #Splitting the OU name by slash characters
     
@@ -661,9 +683,9 @@ function OUnevfordito
     return $forditott #OU name in DistinguishedName form
 }
 
-# This function checks if the OU the user entered, exist.
 function OUcheck
 {
+# This function checks if the OU the user entered, exist.
     $ouletezik = $false
     do 
     {
@@ -684,9 +706,9 @@ function OUcheck
     return $ou
 }
 
-## This function checks if the identifier, the user entered is exist, and asks them to enter it again, if not.
 function Letezike 
 {
+## This function checks if the identifier, the user entered is exist, and asks them to enter it again, if not.
     param ($obj)
     do
     {
@@ -700,12 +722,12 @@ function Letezike
     return $obj
 }
 
-# This will be used to create custom attributes and filters to query.
-# Currently nonfunctional, therefore doesn't show up in any menu
 function Createcustom
 {
+# This will be used to create custom attributes and filters to query.
+# Currently nonfunctional, therefore doesn't show up in any menu
     param ($attribfilter)
-# Create custom attributes    
+
     if ($attribfilter -eq $lang.attribute)
     {
         do
@@ -784,17 +806,18 @@ function Createcustom
 #-#-#                                                                                         #-#-#
 #-#-# These make it easier to navigate through the menus, show elements, select options, etc. #-#-#
 
-# This function clears the console, than shows the program title, and menu title in every menu. 
 function MenuTitle
 {
+# This function clears the console, than shows the program title, and menu title in every menu.
     param ($menuname)
     Clear-Host
     Write-Host "$($title)$($menuname)`n"    
 }
 
-## This function is responsible to check if users entered one of the allowed choices
+
 function Valaszt
 {
+## This function is responsible to check if users entered one of the allowed choices
     param($choice) # It receives an array of the possible choices, it's not fixed, so it doesn't matter if we have 2 allowed choices, or 30
     $probalkozottmar = $false
     do
@@ -822,34 +845,34 @@ function Valaszt
     return $valasztas
 }
 
-# This function brings up the selection menu after a task is finished.
 function AfterProcess
 {
+# This function brings up the selection menu after a task is finished.
     param($copy)
 
     Write-Host "$($lang.after_process)"
     if ($copy)
     {
-        Write-Host "($($lang.char_repeat)) $($lang.repeat_with_source)"
+        Write-Host "($($lang.char_repeat)) $($lang.repeat)"
     }
     Write-Host "($($lang.char_new_proc)) $($lang.new_process)"
     Write-Host "($($lang.char_mainmenu)) $($lang.return_to_main_menu)"
     Write-Host "($($lang.char_quit)) $($lang.to_quit)"
     if ($copy)
     {
-        $kilep = Valaszt $lang.char_repeat $lang.char_new_proc $lang.char_mainmenu $lang.char_quit
+        $kilep = Valaszt ("$($lang.char_repeat)", "$($lang.char_new_proc)", "$($lang.char_mainmenu)", "$($lang.char_quit)")
     }
     else
     {
-        $kilep = Valaszt $lang.char_new_proc $lang.char_mainmenu $lang.char_quit
+        $kilep = Valaszt ("$($lang.char_new_proc)", "$($lang.char_mainmenu)", "$($lang.char_quit)")
     }
     return $kilep
 }
 
-# This function is here to show help messages throughout the program.
-# It works, but the help messages aren't written yet.
 function Outhelp
 {
+# This function is here to show help messages throughout the program.
+# It works, but the help messages aren't written yet.
     param($prompt, $help)
         
         $parameter
@@ -870,11 +893,11 @@ function Outhelp
 #-#-#                                                                                         #-#-#
 #-#-# They don't need to be in separate functions, but it makes the code more readable to me. #-#-#
 
+function UsersOfGroup 
+{
 # This menu is for collecting all users of a group, and outputting them on console,
 # saving them in a csv, or copying them to another group.
 # Parts of it need minor rewriting to be more efficient, and less cluttered.
-function UsersOfGroup 
-{
     MenuTitle($lang.users_of_group) 
     Write-Host $lang.enter_group_name
     $csopnev = Read-Host -Prompt $lang.id
@@ -968,136 +991,140 @@ function UsersOfGroup
     return $kilep
 }
 
+function SingleUser
+{
 # This menu is querying a user. We can get their group memberships, or a detailed table about their
 # attributes. In either case, we can show the output on console, or save it to a csv.
 # In case of group memberships, we can also copy them to another user.
-function SingleUser
-{    
     do # Second loop in this program. We get here if we want to do different tasks with the user #
     {
         MenuTitle($lang.memberships_of_user)
         $result = $null
         $username = Read-Host -Prompt $lang.id
         $username = Letezike $username # It calls the function to check if the entered username exist
-        $kitol = Get-ADUser $username 
-        Write-Host $lang.i_found $username $lang.the_user $kitol.name"`n" -ForegroundColor Green
-        Write-Host $lang.what_kind_of_query
-        Write-Host $lang.simple_with_groupmemberships
-        Write-Host $lang.detailed_with_attribute_selection
-        $mit = Valaszt("1", "2")
+        do
+        {
+            MenuTitle($lang.memberships_of_user)
+            $kitol = Get-ADUser $username 
+            Write-Host $lang.i_found $username $lang.the_user $kitol.name"`n" -ForegroundColor Green
+            Write-Host $lang.what_kind_of_query
+            Write-Host $lang.simple_with_groupmemberships
+            Write-Host $lang.detailed_with_attribute_selection
+            $mit = Valaszt("1", "2")
 
-        if($mit -eq "1")
-        {
-            $result = Get-ADPrincipalGroupMembership $username | select  @{n=$lang.group_name; e='name'} #| Out-String
-        }
-        else
-        {
-            $menu = [QueryFiltering]::new($true, $true, $lang.memberships_of_user, $username)
-            $menu.Menu()
-            $result = invoke-expression $menu.Output()
-        }
+            if($mit -eq "1")
+            {
+                $result = Get-ADPrincipalGroupMembership $username | select  @{n=$lang.group_name; e='name'} #| Out-String
+            }
+            else
+            {
+                $menu = [QueryFiltering]::new($true, $true, $lang.memberships_of_user, $username)
+                $menu.Menu()
+                $result = invoke-expression $menu.Output()
+            }
 
-        Write-Host "`n$($lang.what_do_you_want_with_results)"
-        Write-Host "(1) $($lang.whats_next_outconsole)"
-        Write-Host "(2) $($lang.whats_next_savecsv)"
-        if ($admin) # As we probably don't want users to modify groups, most likely they don't even have rights to do so, we won't even show the option to them
-        {
-            Write-Host "(3) $($lang.whats_next_users_copy_memberships)"
-            $kiir = Valaszt ("1", "2", "3")
-        }
-        else
-        {
-            $kiir = Valaszt ("1", "2")
-        }
-        switch($kiir)
-        {
-            1 
-                { 
-                    $kiirat = $result | Out-String
-                    Write-Host $kiirat
-                    $kilep = AfterProcess
-                }
-            2
-                {
-                    $csvout = [CSV]::new($lang.users, "$username-$($lang.s_rights)")
-                    $csvout.Create($result, $false)
-                    $kilep = AfterProcess
-                }
-            3 
-                {
-                    # Inner loop. We get back here if the user of the program wants to copy source user's memberships to another user #
-                    do 
+            Write-Host "`n$($lang.what_do_you_want_with_results)"
+            Write-Host "(1) $($lang.whats_next_outconsole)"
+            Write-Host "(2) $($lang.whats_next_savecsv)"
+            if ($admin) # As we probably don't want users to modify groups, most likely they don't even have rights to do so, we won't even show the option to them
+            {
+                Write-Host "(3) $($lang.whats_next_users_copy_memberships)"
+                $kiir = Valaszt ("1", "2", "3")
+            }
+            else
+            {
+                $kiir = Valaszt ("1", "2")
+            }
+            switch($kiir)
+            {
+                1 
+                    { 
+                        $kiirat = $result | Out-String
+                        Write-Host $kiirat
+                        $kilep = AfterProcess $true
+                    }
+                2
                     {
-                        MenuTitle($lang.memberships_of_user)         
-                        Write-Host $kitol.Name $lang.users_groups_copy
-                        Write-Host $lang.enter_target_user
-                        $newuser = Read-Host -Prompt $lang.id
-                        $newuser = Letezike $newuser
+                        $csvout = [CSV]::new($lang.users, "$username-$($lang.s_rights)")
+                        $csvout.Create($result, $false)
+                        $kilep = AfterProcess $true
+                    }
+                3 
+                    {
+                        # Inner loop. We get back here if the user of the program wants to copy source user's memberships to another user #
+                        do 
+                        {
+                            MenuTitle($lang.memberships_of_user)         
+                            Write-Host $kitol.Name $lang.users_groups_copy
+                            Write-Host $lang.enter_target_user
+                            $newuser = Read-Host -Prompt $lang.id
+                            $newuser = Letezike $newuser
                         
-                        # A The process of copying memberships #
-                        [array]$csopnevek = Get-ADPrincipalGroupMembership $username;
-                        $kihez = Get-ADUser $newuser
-                        $elemszam = $csopnevek.Count
+                            # A The process of copying memberships #
+                            [array]$csopnevek = Get-ADPrincipalGroupMembership $username;
+                            $kihez = Get-ADUser $newuser
+                            $elemszam = $csopnevek.Count
 
-                        MenuTitle($lang.memberships_of_user)
-                        Write-Host $kitol.Name $lang.users_groups_copying $kihez.Name $lang.to_user
-                        for ($i=0; $i -lt $elemszam; $i++)
-                            {
-                                # Catch exceptions. It won't show them here, but collected at the end of the process #
-                                try
-                                    {
-                                        Add-ADGroupMember -Identity $csopnevek[$i] -Members $newuser
-                                        Write-Host "`r$i/"$elemszam $lang.copy_of -NoNewline
-                                    }
-                                catch
-                                    {                                    
-                                        $hiba += @($csopnevek[$i].SamAccountName)
-                                    }
-                            }
-
-                            # After the task is finished notifying the user of the results.
-                            # As here we tried to modify several groups, the result can be unsuccesful, partially succesful, and fully succesful.
-                            # We handle all these in the following conditionals
-                            if ($hiba.Count -gt 0)
-                            {
-                                if ($hiba.Count -eq $elemszam) # In case of an unsuccesful task
+                            MenuTitle($lang.memberships_of_user)
+                            Write-Host $kitol.Name $lang.users_groups_copying $kihez.Name $lang.to_user
+                            for ($i=0; $i -lt $elemszam; $i++)
                                 {
-                                    MenuTitle($lang.memberships_of_user)
-                                    Write-Host $lang.have_no_rights_to_modify_groups -ForegroundColor Red
-                                }
-                                else  # In case of a partially succesful task. We'll write the collected unsuccesful processes here
-                                {
-                                    MenuTitle($lang.memberships_of_user)
-
-                                    $sikeres = $elemszam-$hiba.Count                                                
-                                    Write-Host $lang.task_ended_with_errors "`n" -ForegroundColor Yellow
-                                    for ($j=0; $j -lt $hiba.Count; $j++)
+                                    # Catch exceptions. It won't show them here, but collected at the end of the process #
+                                    try
                                         {
-                                            Write-Host $lang.you_have_no_rights $hiba[$j] $lang.to_modify_group -ForegroundColor Yellow                                                    
+                                            Add-ADGroupMember -Identity $csopnevek[$i] -Members $newuser
+                                            Write-Host "`r$i/"$elemszam $lang.copy_of -NoNewline
                                         }
-                                    # A notification about the number of succesful copies
-                                    Write-Host $kihez.Name $lang.user_added $sikeres $lang.to_group_of $elemszam $lang.of_groups "`n" -ForegroundColor Yellow
+                                    catch
+                                        {                                    
+                                            $hiba += @($csopnevek[$i].SamAccountName)
+                                        }
                                 }
-                            }
-                            # Best case scenario, notification in case of a fully succesful task #
-                            else
-                            {
-                                MenuTitle($lang.memberships_of_user)
-                                Write-Host $lang.task_fully_succesful -ForegroundColor Green
-                            }
-                            $kilep = AfterProcess $true
-                    } while ($kilep -eq $lang.char_repeat)
-                }
-        }
+
+                                # After the task is finished notifying the user of the results.
+                                # As here we tried to modify several groups, the result can be unsuccesful, partially succesful, and fully succesful.
+                                # We handle all these in the following conditionals
+                                if ($hiba.Count -gt 0)
+                                {
+                                    if ($hiba.Count -eq $elemszam) # In case of an unsuccesful task
+                                    {
+                                        MenuTitle($lang.memberships_of_user)
+                                        Write-Host $lang.have_no_rights_to_modify_groups -ForegroundColor Red
+                                    }
+                                    else  # In case of a partially succesful task. We'll write the collected unsuccesful processes here
+                                    {
+                                        MenuTitle($lang.memberships_of_user)
+
+                                        $sikeres = $elemszam-$hiba.Count                                                
+                                        Write-Host $lang.task_ended_with_errors "`n" -ForegroundColor Yellow
+                                        for ($j=0; $j -lt $hiba.Count; $j++)
+                                            {
+                                                Write-Host $lang.you_have_no_rights $hiba[$j] $lang.to_modify_group -ForegroundColor Yellow                                                    
+                                            }
+                                        # A notification about the number of succesful copies
+                                        Write-Host $kihez.Name $lang.user_added $sikeres $lang.to_group_of $elemszam $lang.of_groups "`n" -ForegroundColor Yellow
+                                    }
+                                }
+                                # Best case scenario, notification in case of a fully succesful task #
+                                else
+                                {
+                                    MenuTitle($lang.memberships_of_user)
+                                    Write-Host $lang.task_fully_succesful -ForegroundColor Green
+                                }
+                                $kilep = AfterProcess $true
+                        } while ($kilep -eq $lang.char_repeat)
+                    }
+            }
+        } while ($kilep -eq $lang.char_repeat)
     } while ($kilep -eq $lang.char_new_proc)
     return $kilep
 }
 
+function GroupsOfOU 
+{
 # This menu is for collecting all users of all groups from an OU, and saving them into separate CSVs.
 # Right now I'm not planning to extend the functions of this menu.
 # Parts of it need minor rewriting to be more efficient, and less cluttered.
-function GroupsOfOU 
-{
     do
     {
         MenuTitle($lang.users_of_all_groups_ou)
@@ -1126,7 +1153,7 @@ function GroupsOfOU
         {            
             $csopnev = Get-ADGroup $csopnevek[$i].samAccountName
             $result = Get-ADGroupMember -identity $csopnev | Get-ADObject -Properties description, samAccountName | select @{n=$lang.name; e='name'}, @{n=$lang.description; e='description'}, @{n=$lang.username; e='samAccountName'}
-            $csvout.File($csopnevek[$i].name)
+            $csvout.File($csopnev.name)
             $csvout.Create($result, $true)
             $percentage = [math]::Round($progressbar * ($i+1)) # To count the current percentage
             Write-Host "`r$Percentage%" -NoNewline # To show the current percentage to the user, without putting it into a new line
@@ -1136,11 +1163,11 @@ function GroupsOfOU
     return $kilep
 }
 
+function AllUsersFromOU 
+{
 # This menu is for collecting all group memberships of all users from an OU, and saving them
 # into separate CSVs. Right now I'm not planning to extend the functions of this menu.
 # Parts of it need minor rewriting to be more efficient, and less cluttered.
-function AllUsersFromOU 
-{
     do
     {
         MenuTitle($lang.memberships_of_all_users_ou)
@@ -1170,7 +1197,7 @@ function AllUsersFromOU
         {
             $username = Get-ADUser $userek[$i].samAccountName
             $result = Get-ADPrincipalGroupMembership $username | select @{n=$lang.group_name; e='name'}
-            $csvout.File($username)
+            $csvout.File($username.samAccountName)
             $csvout.Create($result, $true)
 
             $percentage = [math]::Round($progressbar * ($i+1))
@@ -1181,10 +1208,10 @@ function AllUsersFromOU
     return $kilep
 }
 
-# This function is to mass query all users or all computers from an OU. It doesn't show their
-# group memberships, but it gives a detailed set of attributes and filters we can query them by.
 function OUUsersComputers
 {
+# This function is to mass query all users or all computers from an OU. It doesn't show their
+# group memberships, but it gives a detailed set of attributes and filters we can query them by.
     param($title, $isuser, $csvdir, $csvname)
     MenuTitle($title)
     $menu = [QueryFiltering]::new($isuser, $false, $title, $false)
@@ -1206,9 +1233,8 @@ function OUUsersComputers
                 }
             2
                 {
-                    $csvout = [CSV]::new($csvdir, "$($Script:ounev)-$($csvname).csv")
+                    $csvout = [CSV]::new($csvdir, "$($Script:ounev)-$($csvname)")
                     $csvout.Create($result, $false)
-                    $kilep = AfterProcess
                 }
         }
         $kilep = AfterProcess
@@ -1216,6 +1242,8 @@ function OUUsersComputers
     return $kilep
 }
 
+function MassModify
+{
 # Without a doubt the most dangerous part of the program at the moment. It must be used with extreme caution, as it can change
 # the attributes of every single user we have authority over in a few seconds. To make the changes reversable,
 # I implemented a save feature, that saves the old attributes into a csv file before making the changes. To make it even more secure,
@@ -1224,9 +1252,7 @@ function OUUsersComputers
 #
 # It also creates a logfile about the changes it couldn't make for some reason. It works a little less precisely at the moment,
 # but it gives an overview about the unsuccesful tasks.
-function MassModify
-{
-    # Maybe it could still be optimized a bit, but it works as efficiently, as I could write it now
+# Maybe it could still be optimized a bit, but it works as efficiently, as I could write it now
     do
     {
         # Warnings
@@ -1271,6 +1297,7 @@ function MassModify
             try
             {
                 $incsv = Get-Content $csvinpath
+                $nextmove = $true
             }
             catch
             {
@@ -1296,7 +1323,7 @@ function MassModify
 
         # The actual process
         $timestamp = Timestamp
-        $csvout = [CSV]::new("$($lang.users)\$ounev\$backup", $timestamp)
+        $csvout = [CSV]::new("$($lang.users)\$ounev\$($lang.backup)", $timestamp)
         ## First step, getting the number of columns. It probably can be done a little more sophisticated. 
         for ($i = 0; $i -lt 1; $i++)
         {
@@ -1309,7 +1336,6 @@ function MassModify
         Write-Host $lang_progress
         
         $hiba = @() ## Array to store the errors, instead of outputting them realtime on the console
-        $firstuser = $true ## We will need this variable for saving the backup CSV
         for ($i = 0; $i -lt $incsv.Length; $i++)
         {
             $value = $incsv[$i].Split("$($lang.delimiter)") # We split the rows by the delimiter we set in the language file
@@ -1347,18 +1373,10 @@ function MassModify
                             $hiba += New-Object PsObject -property @{"$($lang.error_description)" = ("$($lang.the_given_csv) $attribute $($lang.the_attribute) $ADUser $($lang.for_the_user)")}
                         }
                     }
-                    if($firstuser) # We need separate command for the first time, when we create the CSV file
-                    {
-                        $csvout.Create($backup, $false)
-                        $firstuser = $false # We don't need this branch of the if-else anymore, so set the variable false.
-                    }
-                    else
-                    {
-                        $csvout.Append($backup)
-                    }
+                    $csvout.Append($backup)
                     $percentage = [math]::Round($progressbar * ($i+1)) # To count the current percentage, it doesn't work properly, at the moment, and there are way more important things to fix than this.
                     Write-Host "`r$Percentage%" -NoNewline # To show the current percentage to the user, without putting it into a new line
-                }
+                }                
             
                 else
                 {
@@ -1368,18 +1386,19 @@ function MassModify
                 }
             }
         }
-        $csvout.File("$timestamp-$failed")
-        $csvout.Create($hiba)
+        $csvout.Separator()
+        $csvout.File("$timestamp-$($lang.failed)")
+        $csvout.Create($hiba, $true)
         $kilep = AfterProcess
     } while ($kilep -eq $lang.char_new_proc)
     return $kilep
 }
 
+function SavePath
+{
 # This function is to change the default save path of the program. Right now it changes it
 # only temporarely, the permanent change can be made by manually changing the attribute in
 # the ini, but I plan to improve the function to do that for us.
-function SavePath
-{
     MenuTitle($lang.change_save_root)
     Write-Host $lang.old_path $script:path "`n"                            
     $newpath = Read-Host -Prompt $lang.new_path
