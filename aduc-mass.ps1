@@ -63,7 +63,22 @@ if (!(Get-Module -ListAvailable -Name ActiveDirectory))
     }
 } 
 
-# Second check. It warns the user if they try to run the program with user level rights.
+# Second check. It doesn't let the user continue, if they aren't connected to
+# Active Directory. As the program queries Active Directory,
+# it makes no sense to go further than this without it.
+try
+    {
+        Get-ADUser test
+    }
+    catch
+    {
+        Write-Host "$($lang.not_connected_to_ad)`n$($lang.program_exits)" -ForegroundColor Red
+        Read-Host
+        break
+    }
+
+# Third check. It's a soft one, as the program can continue, even if this test fails.
+# It warns the user if they try to run the program with user level rights.
 # Most functions work without admin rights, but it still worth to notify the user about it.
 $admine = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
 if (!($admine.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)))
@@ -97,7 +112,7 @@ else
 
 # Enums to index filters in the filters menu by letters, so it won't get mixed up with attributes.
 # There's probably a better way to index them by letters, but it works for now.
-# It's only as far as "G" because "H" is used for help menu, and pobably 7 filters are enough.
+# It's only as far as "E" because "F" is used for finalizing, and pobably 5 filters are enough.
 enum Filterindex
 {
     a = 0
@@ -105,8 +120,6 @@ enum Filterindex
     c = 2
     d = 3
     e = 4
-    f = 5
-    g = 6
 }
 
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
@@ -321,7 +334,7 @@ class OUfilter
         {
             Write-Host $script:lang.unset_ou
             $yousure = Read-Host -Prompt $script:lang.choose
-            if ($yousure -eq $script:lang.yes_char)
+            if ($yousure -eq $script:lang.char_yes)
             {
                 $this.state = $false
             }
@@ -394,7 +407,7 @@ class QueryFiltering
         # Filters. We need them only if we want to query more users, so they won't show up when querying one user
         if (!($this.issingle))
         {        
-            $filters.Add(($script:lastlogonfilter = [Filterpairs]::new(($active = "{LastLogonTimeStamp -gt $($this.time)}"),$script:lang.active_ones,($inactive = "{LastLogonTimeStamp -lt $($this.time)}"),$script:lang.inactive_ones))) > $null
+            $filters.Add(($script:lastlogonfilter = [Filterpairs]::new(($active = "LastLogonTimeStamp -gt `$time"),$script:lang.active_ones,($inactive = "LastLogonTimeStamp -lt `$time"),$script:lang.inactive_ones))) > $null
             $filters.Add(($isenabled = [Filterpairs]::new(('Enabled -eq "True"'),$script:lang.enabled,($isdisabled = 'Enabled -eq "False"'),$script:lang.disabled))) > $null
             $filters.Add(($script:oufilter = [OUfilter]::new())) > $null
         }
@@ -444,7 +457,7 @@ class QueryFiltering
                     Write-Host $script:lang.available_attribs
                 }
                 [array]$opciok = $null
-                [array]$functionexplanation = ($script:lang.funcexptitle, <#$lang.custom_attrib_title, $lang.custom_filter_title,#> $script:lang.funchelp, $script:lang.funcfinish)
+                [array]$functionexplanation = ($script:lang.funcexptitle, <#$lang.custom_attrib_title, $lang.custom_filter_title,#> $script:lang.funchelp, "($($script:lang.char_finalize)) $($script:lang.funcfinish)")
                 $j = 0
                 for ($i = 0; $i -lt $this.attributes.Count; $i++)
                 {
@@ -549,8 +562,6 @@ class QueryFiltering
             } while(!($napja -is [int32]))
             $time = (Get-Date).Adddays(-($napja))
             $script:time = $time
-            $script:lastlogonfilter.trueside = "LastLogonTimeStamp -gt `$time"
-            $script:lastlogonfilter.falseside = "LastLogonTimeStamp -lt `$time"
         }
 
         for($i = 0; $i -lt $this.attributes.Count; $i++)
@@ -1003,6 +1014,7 @@ function SingleUser
     {
         MenuTitle($lang.memberships_of_user)
         $result = $null
+        Write-Host $lang.enter_username
         $username = Read-Host -Prompt $lang.id
         $username = Letezike $username # It calls the function to check if the entered username exist
         do
@@ -1011,8 +1023,8 @@ function SingleUser
             $kitol = Get-ADUser $username 
             Write-Host $lang.i_found $username $lang.the_user $kitol.name"`n" -ForegroundColor Green
             Write-Host $lang.what_kind_of_query
-            Write-Host $lang.simple_with_groupmemberships
-            Write-Host $lang.detailed_with_attribute_selection
+            Write-Host "(1) $($lang.simple_with_groupmemberships)"
+            Write-Host "(2) $($lang.detailed_with_attribute_selection)"
             $mit = Valaszt("1", "2")
 
             if($mit -eq "1")
@@ -1099,7 +1111,7 @@ function SingleUser
                                         MenuTitle($lang.memberships_of_user)
 
                                         $sikeres = $elemszam-$hiba.Count                                                
-                                        Write-Host $lang.task_ended_with_errors "`n" -ForegroundColor Yellow
+                                        Write-Host $lang.task_finished_with_errors "`n" -ForegroundColor Yellow
                                         for ($j=0; $j -lt $hiba.Count; $j++)
                                             {
                                                 Write-Host $lang.you_have_no_rights $hiba[$j] $lang.to_modify_group -ForegroundColor Yellow                                                    
@@ -1403,17 +1415,19 @@ function SavePath
 # only temporarely, the permanent change can be made by manually changing the attribute in
 # the ini, but I plan to improve the function to do that for us.
     MenuTitle($lang.change_save_root)
-    Write-Host $lang.old_path $script:path "`n"                            
-    $newpath = Read-Host -Prompt $lang.new_path
+    Write-Host $lang.old_path $script:path "`n"
+    Write-Host $lang.new_path
+    $newpath = Read-Host -Prompt $lang.path
 
     if(!(Test-Path -Path $newpath))
     {
         Write-Host $lang.folder_not_exist
-        $fold = Valaszt ("1", "2")
+        Write-Host "($($script:lang.char_yes)) $($script:lang.yes)`n($($script:lang.char_no)) $($script:lang.no)"
+        $fold = Valaszt ("$($script:lang.char_yes)", "$($script:lang.char_no)")
                 
         do
         {    
-            if ($fold -eq "1")
+            if ($fold -eq "$($script:lang.char_yes)")
             {
                 try
                 {
@@ -1424,6 +1438,8 @@ function SavePath
                 {
                     Write-Host "`n$($lang.directory_cant_be_created)" -ForegroundColor Red
                     Write-Host $lang.new_or_exit
+                    Write-Host "(1)" $lang.enter_new_path
+                    Write-Host "(2)" $lang.stick_to_original
                     $neworold = Valaszt ("1", "2")
 
                     if ($neworold -eq "2")
@@ -1436,7 +1452,7 @@ function SavePath
                     }
                 }
             } 
-        } while (!(Test-Path -Path $newpath) -and $fold -eq "1" -and $neworold -ne "2")
+        } while (!(Test-Path -Path $newpath) -and $fold -eq "$($script:lang.char_yes)" -and $neworold -ne "2")
     }
     $script:path = $newpath
 }
