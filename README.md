@@ -47,9 +47,7 @@ In a very-VERY distant future I plan to rewrite the code to have a GUI. I consid
 
 
 # Known bugs
-* The progress counter doesn't show correct value during the actions. It doesn't concern the usage, the values it gives are more or less accurate, and it will be fixed in the next released by changing the counter to a better method.
-* The part that collects the unmodifiable attributes during the mass modify function acts strangely, and I don't yet know why. It does collect the unsuccesful changes, but it lists all the attributes before the unsuccesful ones. Basically it gives the needed information, just looks ugly.
-* It gives false positive results when the searched object doesn't exist in the type (group, user) we checked, but exist in the other one. I know what causes it, but it doesn't obstruct daily work with the program (two objects can't have the same name in AD, so you most likely meet this bug only if you selected the wrong menu), so it wasn't a priority.
+* There are no actual bugs at the moment I know of.
 
 # Other
 Of course, I look forward to feature suggestions, bug reports, or anything else you'd like to add.
