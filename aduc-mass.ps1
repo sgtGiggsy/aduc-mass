@@ -2,10 +2,48 @@
 #-#-#                                      SETTINGS                                           #-#-#
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
 
-# Language. It checks the system language of the OS, then sets the language to Hungarian,
-# if it's Hungarian, and sets to English, if it's any other language
-$sysloc = Get-WinSystemLocale
-if ($sysloc.Name -eq "hu-HU")
+# Configuration. It's very basic at the moment, it has only the default save path, language, and
+# a debug function in it.
+try
+{
+    $ErrorActionPreference = "Stop"
+    $config = Get-Content ".\config.ini" | Out-String | ConvertFrom-StringData
+}
+catch
+{
+}
+
+# Language. It checks if there is a user defined language in config.ini, if there isn't,
+# checks the system language of the OS, then sets the language to Hungarian, if it's Hungarian,
+# and sets to English, if it's any other language
+if ($config.language)
+{
+    try
+    {
+        $ErrorActionPreference = "Stop"
+        $lang = Get-Content ".\Languages\$($config.language).lang" | Out-String | ConvertFrom-StringData
+    }
+    catch
+    {
+        Write-Host "The Language file given in 'Config.INI' is missing!`nThe program will start with English language!`nHit Enter to continue!" -ForegroundColor Red
+        Read-Host
+        try
+        {
+            $ErrorActionPreference = "Stop"
+            $lang = Get-Content ".\Languages\eng.lang" | Out-String | ConvertFrom-StringData
+        }
+        catch
+        {
+            Write-Host "The Language file is missing!`nCheck if 'eng.lang' file is in the Language folder of the program" -ForegroundColor Red
+            Read-Host
+        }
+    }
+}
+
+else
+{    
+    $sysloc = Get-WinSystemLocale
+    if ($sysloc.Name -eq "hu-HU")
     {
         try
         {
@@ -15,9 +53,10 @@ if ($sysloc.Name -eq "hu-HU")
         catch
         {
             Write-Host "A nyelvi fájl hiányzik!`nKérlek ellenőrizd, hogy a 'hun.lang' fájl megtalálható-e a program Language könyvtárában!" -ForegroundColor Red
+            Read-Host
         }
     }
-else
+    else
     {
         try
         {
@@ -27,18 +66,11 @@ else
         catch
         {
             Write-Host "The Language file is missing!`nCheck if 'eng.lang' file is in the Language folder of the program" -ForegroundColor Red
+            Read-Host
         }
     }
+}
 
-# Configuration. It's very basic at the moment, it has only the default save path in it.
-try
-{
-    $ErrorActionPreference = "Stop"
-    $config = Get-Content ".\config.ini" | Out-String | ConvertFrom-StringData
-}
-catch
-{
-}
 
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
 #-#-#                                   PRE-RUN CHECKS                                        #-#-#
@@ -61,22 +93,24 @@ if (!(Get-Module -ListAvailable -Name ActiveDirectory))
         Read-Host
         break
     }
-} 
+}
 
-# Second check. It doesn't let the user continue, if they aren't connected to
-# Active Directory. As the program queries Active Directory,
-# it makes no sense to go further than this without it.
-try
+# Second check. It doesn't let the user continue, if they aren't connected to Active Directory.
+# As the program queries Active Directory, it makes no sense to go further than this without it.
+if ($config.dont_check_ad -eq $true){}
+else
+{
+    try
     {
-        Get-ADUser test
+        Get-ADUser teszt
     }
-    catch
+    catch [Microsoft.ActiveDirectory.Management.ADServerDownException]
     {
         Write-Host "$($lang.not_connected_to_ad)`n$($lang.program_exits)" -ForegroundColor Red
         Read-Host
         break
     }
-
+}
 # Third check. It's a soft one, as the program can continue, even if this test fails.
 # It warns the user if they try to run the program with user level rights.
 # Most functions work without admin rights, but it still worth to notify the user about it.
@@ -96,7 +130,7 @@ else
     $title
 }
 
-# Third check. It doesn't do anything else, than setting the save path to the one in the config.ini.
+# Fourth check. It doesn't do anything else, than setting the save path to the one in the config.ini.
 if ($config.savepath)
 {
     $script:path = $config.savepath
@@ -207,12 +241,16 @@ class CSV
     }
     Append($bemenet)
     {
-        $bemenet | export-csv -encoding unicode -path $this.out -NoTypeInformation -Append
+        $bemenet | export-csv -encoding unicode -path $this.out -NoTypeInformation -Append -Force
     }
 
     Separator()
     {
         "sep=,`n"+(Get-Content $this.out -Raw) | Set-Content $this.out
+    }
+    [String]ShowPath()
+    {
+        return $this.out 
     }
 }
 
@@ -434,7 +472,7 @@ class QueryFiltering
     }
 
     Menu()
-# This method is responsible for showing the attribute, and filter slection menu, and also it calls the methods
+# This method is responsible for showing the attribute, and filter selection menu, and also it calls the methods
 # the other classes on the attribute and filter objects.
     {
         $ouisset = $true
@@ -488,7 +526,7 @@ class QueryFiltering
                 $this.setter = Valaszt($opciok)
                 switch ($this.setter)
                     {
-                        K { }
+                        $script:lang.char_finalize { }
                         H { Read-Host $script:lang.attribselectmain_help }
                         $script:lang.attribute { Createcustom($this.setter) }
                         $script:lang.filter { Createcustom($this.setter) }
@@ -513,8 +551,7 @@ class QueryFiltering
             {
                 Write-Host $script:lang.confirm_without_ou -ForegroundColor DarkYellow
                 Write-Host $script:lang.search_will_be_on_whole_ad -ForegroundColor DarkYellow
-                Write-Host "($($script:lang.char_yes)) $($script:lang.yes)`n($($script:lang.char_no)) $($script:lang.no)"
-                $confirm = Valaszt ("$($script:lang.char_yes)", "$($script:lang.char_no)")
+                $confirm = YesNo
                 if($confirm -eq $script:lang.char_yes)
                 {
                     $ouisset = $true
@@ -635,7 +672,29 @@ class QueryFiltering
                 $script:query = "Get-ADComputer -Filter '$filter' -SearchBase '$($searchbase)' -Properties $properties | Select-Object $select"
             }
         }
-        return $script:query # | Out-String # | export-csv -Encoding Unicode -path D:\file.csv -NoTypeInformation
+        return $script:query
+    }
+}
+
+class ProgressCounter
+{
+    $osszeselem
+    ProgressCounter($osszeselem)
+    {
+        $this.osszeselem = $osszeselem
+    }
+
+    Percent($egyelem)
+    {
+        $progressbar = 100 / $this.osszeselem
+
+        $percentage = [math]::Round($progressbar * ($egyelem+1)) # To count the current percentage
+        Write-Host "`r$Percentage%" -NoNewline
+    }
+
+    XperY($egyelem)
+    {
+        Write-Host "`r$egyelem/"$this.osszeselem $script:lang.copy_of -NoNewline
     }
 }
 
@@ -649,6 +708,7 @@ class QueryFiltering
 #-#-# Because one can never be lazy enough. The one(s) that got here are almost ponitless. #-#-#
 function Timestamp
 {
+# I'm not convinced if it will ever be reused, but if so, it will come in handy. I guess...
     return Get-Date -Format FileDateTime   
 }
 
@@ -720,16 +780,33 @@ function OUcheck
 function Letezike 
 {
 ## This function checks if the identifier, the user entered is exist, and asks them to enter it again, if not.
-    param ($obj)
-    do
+    param ($obj, $isuser)
+    
+    if ($isuser)
     {
-        if (@(Get-ADObject -Filter { SamAccountName -eq $obj }).Count -eq 0)
+        do
+        {
+            if (@(Get-ADUser -Filter { SamAccountName -eq $obj }).Count -eq 0)
             {                
                 Write-Host "`n$($lang.id_not_exist)" "`n" -ForegroundColor Red
                 Write-Host $lang.reenter_id
                 $obj = Read-Host -Prompt $lang.id
             }
-    } while (@(Get-ADObject -Filter { SamAccountName -eq $obj }).Count -eq 0)
+        } while(@(Get-ADUser -Filter { SamAccountName -eq $obj }).Count -eq 0)
+    }
+
+    else
+    {
+        do
+        {
+            if (@(Get-ADGroup -Filter { SamAccountName -eq $obj }).Count -eq 0)
+            {                
+                Write-Host "`n$($lang.id_not_exist)" "`n" -ForegroundColor Red
+                Write-Host $lang.reenter_id
+                $obj = Read-Host -Prompt $lang.id
+            }
+        } while(@(Get-ADGroup -Filter { SamAccountName -eq $obj }).Count -eq 0)
+    }
     return $obj
 }
 
@@ -856,6 +933,13 @@ function Valaszt
     return $valasztas
 }
 
+function YesNo
+{
+    Write-Host "($($script:lang.char_yes)) $($script:lang.yes)`n($($script:lang.char_no)) $($script:lang.no)"
+    $confirm = Valaszt ("$($script:lang.char_yes)", "$($script:lang.char_no)")
+    return $confirm    
+}
+
 function AfterProcess
 {
 # This function brings up the selection menu after a task is finished.
@@ -958,24 +1042,23 @@ function UsersOfGroup
                             MenuTitle($lang.users_of_group)
                             Write-Host $lang.group_members_copy_the $kitol.name $lang.group_members_copy "`n"
                             Write-Host $lang.enter_target_group
-                            $newgroup = Read-Host -Prompt $lang.group_name
-                            $newgroup = Letezike $newgroup
+                            $targetgroup = Read-Host -Prompt $lang.group_name
+                            $targetgroup = Letezike $targetgroup
 
                             # The process of adding the members to the other group #
                             [array]$members = Get-ADGroupMember $csopnev;
-                            $kihez = Get-ADGroup $newgroup                    
+                            $kihez = Get-ADGroup $targetgroup                    
                             MenuTitle($lang.users_of_group)
                             Write-Host $kitol.Name $lang.group_members_copying $kihez.Name $lang.to_group
 
-                            $elemszam = $members.Count
-
-                            for ($i=0; $i -lt $elemszam; $i++)
+                            $progress = [ProgressCounter]::New($members.Count)
+                            for ($i=0; $i -lt $members.Count; $i++)
                             {
                                 # Catch exceptions #
                                 try
                                 {
-                                    Add-ADGroupMember -Identity $newgroup -Members $members[$i]
-                                    Write-Host "`r$i/"$elemszam $lang.copy_of -NoNewline
+                                    Add-ADGroupMember -Identity $targetgroup -Members $members[$i]
+                                    $progress.XperY($i)
                                 }
                                 catch
                                 {                                    
@@ -1016,7 +1099,7 @@ function SingleUser
         $result = $null
         Write-Host $lang.enter_username
         $username = Read-Host -Prompt $lang.id
-        $username = Letezike $username # It calls the function to check if the entered username exist
+        $username = Letezike $username $true # It calls the function to check if the entered username exist
         do
         {
             MenuTitle($lang.memberships_of_user)
@@ -1072,23 +1155,24 @@ function SingleUser
                             MenuTitle($lang.memberships_of_user)         
                             Write-Host $kitol.Name $lang.users_groups_copy
                             Write-Host $lang.enter_target_user
-                            $newuser = Read-Host -Prompt $lang.id
-                            $newuser = Letezike $newuser
+                            $targetuser = Read-Host -Prompt $lang.id
+                            $targetuser = Letezike $targetuser $true
                         
                             # A The process of copying memberships #
                             [array]$csopnevek = Get-ADPrincipalGroupMembership $username;
-                            $kihez = Get-ADUser $newuser
-                            $elemszam = $csopnevek.Count
+                            $kihez = Get-ADUser $targetuser
+
+                            $progress = [ProgressCounter]::New($csopnevek.Count)
 
                             MenuTitle($lang.memberships_of_user)
                             Write-Host $kitol.Name $lang.users_groups_copying $kihez.Name $lang.to_user
-                            for ($i=0; $i -lt $elemszam; $i++)
+                            for ($i=0; $i -lt $csopnevek.Count; $i++)
                                 {
                                     # Catch exceptions. It won't show them here, but collected at the end of the process #
                                     try
                                         {
-                                            Add-ADGroupMember -Identity $csopnevek[$i] -Members $newuser
-                                            Write-Host "`r$i/"$elemszam $lang.copy_of -NoNewline
+                                            Add-ADGroupMember -Identity $csopnevek[$i] -Members $targetuser
+                                            $progress.XperY($i)
                                         }
                                     catch
                                         {                                    
@@ -1101,7 +1185,7 @@ function SingleUser
                                 # We handle all these in the following conditionals
                                 if ($hiba.Count -gt 0)
                                 {
-                                    if ($hiba.Count -eq $elemszam) # In case of an unsuccesful task
+                                    if ($hiba.Count -eq $csopnevek.Count) # In case of an unsuccesful task
                                     {
                                         MenuTitle($lang.memberships_of_user)
                                         Write-Host $lang.have_no_rights_to_modify_groups -ForegroundColor Red
@@ -1110,14 +1194,14 @@ function SingleUser
                                     {
                                         MenuTitle($lang.memberships_of_user)
 
-                                        $sikeres = $elemszam-$hiba.Count                                                
+                                        $sikeres = $csopnevek.Count-$hiba.Count                                                
                                         Write-Host $lang.task_finished_with_errors "`n" -ForegroundColor Yellow
                                         for ($j=0; $j -lt $hiba.Count; $j++)
                                             {
                                                 Write-Host $lang.you_have_no_rights $hiba[$j] $lang.to_modify_group -ForegroundColor Yellow                                                    
                                             }
                                         # A notification about the number of succesful copies
-                                        Write-Host $kihez.Name $lang.user_added $sikeres $lang.to_group_of $elemszam $lang.of_groups "`n" -ForegroundColor Yellow
+                                        Write-Host $kihez.Name $lang.user_added $sikeres $lang.to_group_of $csopnevek.Count $lang.of_groups "`n" -ForegroundColor Yellow
                                     }
                                 }
                                 # Best case scenario, notification in case of a fully succesful task #
@@ -1159,20 +1243,20 @@ function GroupsOfOU
         } while ($vane -eq $false)
         
         $csvout = [CSV]::new("$($lang.groups)\$ounev")
-        $elemszam = $csopnevek.Count
-
-        $progressbar = 100 / $elemszam # To count one item means how much in percentage of the whole process
+        
+        $progress = [ProgressCounter]::New($csopnevek.Count)
+        # To count one item means how much in percentage of the whole process
         Write-Host $lang.progress "`n"
 
-        for ($i=0; $i -lt $elemszam; $i++)
+        for ($i=0; $i -lt $csopnevek.Count; $i++)
         {            
             $csopnev = Get-ADGroup $csopnevek[$i].samAccountName
             $result = Get-ADGroupMember -identity $csopnev | Get-ADObject -Properties description, samAccountName | select @{n=$lang.name; e='name'}, @{n=$lang.description; e='description'}, @{n=$lang.username; e='samAccountName'}
             $csvout.File($csopnev.name)
             $csvout.Create($result, $true)
-            $percentage = [math]::Round($progressbar * ($i+1)) # To count the current percentage
-            Write-Host "`r$Percentage%" -NoNewline # To show the current percentage to the user, without putting it into a new line
+            $progress.Percent($i)
         }
+        Write-Host ""
         $kilep = AfterProcess
     } while ($kilep -eq $lang.char_repeat)
     return $kilep
@@ -1203,21 +1287,18 @@ function AllUsersFromOU
         } while ($vane -eq $false)
 
         $csvout = [CSV]::new("$($lang.users)\$ounev")
-        $elemszam = $userek.Count
+        $progress = [ProgressCounter]::New($userek.Count)
+        Write-Host $lang.progress "`n"
 
-        $progressbar = 100 / $elemszam
-        Write-Host $lang.progress
-
-        for ($i=0; $i -lt $elemszam; $i++)
+        for ($i=0; $i -lt $userek.Count; $i++)
         {
             $username = Get-ADUser $userek[$i].samAccountName
             $result = Get-ADPrincipalGroupMembership $username | select @{n=$lang.group_name; e='name'}
             $csvout.File($username.samAccountName)
             $csvout.Create($result, $true)
-
-            $percentage = [math]::Round($progressbar * ($i+1))
-            Write-Host "`r$Percentage%" -NoNewline
-        }                    
+            $progress.Percent($i)
+        }
+        Write-Host ""        
         $kilep = AfterProcess
     } while ($kilep -eq $lang.char_repeat)
     return $kilep
@@ -1278,8 +1359,7 @@ function MassModify
         Write-Host $lang.mm_prewarn_line3 -ForegroundColor Red
         Write-Host $lang.mm_prewarn_line4 "`n" -ForegroundColor Red
         Write-Host $lang.are_you_sure -ForegroundColor DarkYellow
-        Write-Host "($($script:lang.char_yes)) $($script:lang.yes)`n($($script:lang.char_no)) $($script:lang.no)"
-        $confirm = Valaszt ("$($script:lang.char_yes)", "$($script:lang.char_no)")
+        $confirm = YesNo
         if($confirm -eq $script:lang.char_no)
         {
             break
@@ -1287,9 +1367,9 @@ function MassModify
 
         # Getting the OU path
         $ounev
+        MenuTitle($lang.mass_modify_user_attributes)
         do
         {
-            Write-Host $lang_all_users_of_ou
             $ou = OUcheck # It calls the function to check if the entered OU exist
             $ounev = $Script:ounev # It calls the $script:ounev variable from OUcheck function, so we could create separate folders by OUs
                 
@@ -1304,6 +1384,7 @@ function MassModify
         } while ($vane -eq $false)
 
         # Getting the CSV path
+        MenuTitle($lang.mass_modify_user_attributes)
         Write-Host $lang.enter_modifycsv_path
         do
         {
@@ -1327,8 +1408,9 @@ function MassModify
 # Modify 
 
         # Last confirmation about the process, after this, the program will run
+        MenuTitle($lang.mass_modify_user_attributes)
         Write-Host $lang.last_warning "`n" -ForegroundColor Red
-        Write-Host $lang.the $csvinpath $lang.will_be_used_to_modify $eredetiou $lang.modify_all_users_of_ou "`n" -ForegroundColor Red
+        Write-Host $lang.the $csvinpath $lang.will_be_used_to_modify $script:ounev $lang.modify_all_users_of_ou "`n" -ForegroundColor Red
         Write-Host $lang.enter_yes -ForegroundColor Red
         $confirm = Read-Host -Prompt $lang.enter_string
         if ($confirm -ne $lang.yes) # The program won't go further, unless the users types "yes" in their language.
@@ -1339,6 +1421,7 @@ function MassModify
         # The actual process
         $timestamp = Timestamp
         $csvout = [CSV]::new("$($lang.users)\$ounev\$($lang.backup)", $timestamp)
+        $csvfailed = [CSV]::New("$($lang.users)\$ounev\$($lang.backup)", "$timestamp-$($lang.failed)")
         ## First step, getting the number of columns. It probably can be done a little more sophisticated. 
         for ($i = 0; $i -lt 1; $i++)
         {
@@ -1347,15 +1430,15 @@ function MassModify
 
         ## Here we create the array that will store the attribute names
         $attribute = New-Object string[] $oszlopok.Length
-        $progressbar = 100 / $incsv.Length ## Progressbar, so the user knows how far they are in the process.
-        Write-Host $lang_progress
+        $progress = [ProgressCounter]::New($incsv.Length-1)
+        Write-Host $lang.progress
         
-        $hiba = @() ## Array to store the errors, instead of outputting them realtime on the console
+      #  $hiba = @() ## Array to store the errors, instead of outputting them realtime on the console
         for ($i = 0; $i -lt $incsv.Length; $i++)
         {
             $value = $incsv[$i].Split("$($lang.delimiter)") # We split the rows by the delimiter we set in the language file
             $backup = New-Object PsObject ## This array will store the old values from before we make the change on them
-            
+            $hiba = New-Object PsObject ## Array to store the errors, instead of outputting them realtime on the console
             # This loop is to get the attribute names from the header of the CSV
             if($i -eq 0)
             {
@@ -1366,9 +1449,11 @@ function MassModify
             }
             else
             {
-                $ADUser = $value[0] # For now, the program works only, if samAccountName is the first column of the table.
-                # As a security measure, we change users only from the chosen Organizational Unit, and from nowhere else,
-                # even if the user exist in another OU.
+                $ADUser = $value[0]
+                # For now, the program works only, if samAccountName is the first column of the table.
+                # As a security measure, we change users only from the chosen Organizational Unit,
+                # and from nowhere else, even if the user exist in another OU.
+                $hiba | add-member -membertype NoteProperty -name "$($attribute[0])" -Value "$($ADUser)"
                 if ($ADUser -and (Get-ADUser -SearchBase $ou -Filter "samAccountName -eq '$ADUser'"))
                 {
                     $backup | add-member -membertype NoteProperty -name "$($attribute[0])" -Value "$($ADUser)"
@@ -1378,32 +1463,35 @@ function MassModify
                         {
                             $attribbackup = Get-ADUser -identity $ADUser -Properties $attribute[$j] | Select-Object $attribute[$j] # Backup step 1: getting the value of the attribute                            
                             $backup | add-member -membertype NoteProperty -name "$($attribute[$j])" -Value "$($attribbackup.($attribute[$j]))" # Backup step 2: Putting the value in the backup array object
+                            $hiba | add-member -membertype NoteProperty -name "$($attribute[$j])" -Value ""
                             Set-ADUser -identity $ADUser -Replace @{$attribute[$j]=$value[$j]} # The main part of the whole function. This changes the value of the chosen attribute.
                         }
                         catch
                         {
-                            #$hiba += @("$($lang.the_given_csv) $attribute[$j] $($lang.the_attribute) $ADUser $($lang.for_the_user)") 
                             # Exception catch 2: It tells the user if an attribute is cannot be changed for some reason. As for now it doesn't differenciate
                             # if the user doesn't have sufficient right to change the value, or the CSV file didn't have value for the attribute.
-                            $hiba += New-Object PsObject -property @{"$($lang.error_description)" = ("$($lang.the_given_csv) $attribute $($lang.the_attribute) $ADUser $($lang.for_the_user)")}
+                            $hiba | add-member -membertype NoteProperty -name "$($attribute[$j])" -Value "$($lang.unsuccesful)" -Force
                         }
                     }
                     $csvout.Append($backup)
-                    $percentage = [math]::Round($progressbar * ($i+1)) # To count the current percentage, it doesn't work properly, at the moment, and there are way more important things to fix than this.
-                    Write-Host "`r$Percentage%" -NoNewline # To show the current percentage to the user, without putting it into a new line
+                    $csvfailed.Append($hiba)
                 }                
             
                 else
                 {
-                    #$hiba += @("$($lang.the) $ADUser $($lang.user_doesnt_exist) $ounev $($lang.not_in_the_ou)")
-                    # Exception catch 1: It tells the user if the user they want to change doesn't exist, or isn't in the chosen OU
-                    $hiba += New-Object PsObject -property @{"$($lang.error_description)" = ("$($lang.the) $ADUser $($lang.user_doesnt_exist) $ounev $($lang.not_in_the_ou)")}
+                    $hiba | add-member -membertype NoteProperty -name "$($attribute[1])" -Value "$($lang.user_doesnt_exist) $ounev $($lang.not_in_the_ou)"
+                    $csvfailed.Append($hiba)
                 }
             }
+            $progress.Percent($i-1)
+            # It's a special case, as we actually start the counting from 1, we need to balance out the
+            # percent method, that assumes the first element to receive will be the one with 0 index.
         }
         $csvout.Separator()
-        $csvout.File("$timestamp-$($lang.failed)")
-        $csvout.Create($hiba, $true)
+        $csvfailed.Separator()
+        MenuTitle($lang.mass_modify_user_attributes)
+        Write-Host "$($lang.path_of_backup) $($csvout.ShowPath())" -ForegroundColor Green
+        Write-Host "$($lang.path_of_failed_tasks) $($csvfailed.ShowPath())" -ForegroundColor DarkYellow 
         $kilep = AfterProcess
     } while ($kilep -eq $lang.char_new_proc)
     return $kilep
@@ -1422,8 +1510,7 @@ function SavePath
     if(!(Test-Path -Path $newpath))
     {
         Write-Host $lang.folder_not_exist
-        Write-Host "($($script:lang.char_yes)) $($script:lang.yes)`n($($script:lang.char_no)) $($script:lang.no)"
-        $fold = Valaszt ("$($script:lang.char_yes)", "$($script:lang.char_no)")
+        $fold = YesNo
                 
         do
         {    
@@ -1471,7 +1558,7 @@ do
     Write-Host "(4) $($lang.memberships_of_all_users_ou)"
     Write-Host "(5) $($lang.all_computers_of_ou)"
     Write-Host "(6) $($lang.all_users_of_ou)"
-    Write-Host "(7) $($lang.dangerzone)" -ForegroundColor Red
+    Write-Host "(7) $($lang.mass_modify_user_attributes)" -ForegroundColor Red
     Write-Host "(S) $($lang.change_save_root)"
     Write-Host "`n$($lang.old_path) $script:path"
     $mit = Valaszt ("1", "2", "3", "4", "5", "6", "7", "S")
@@ -1484,7 +1571,14 @@ do
         4 { $kilep = AllUsersFromOU }
         5 { $kilep = OUUsersComputers $lang.all_computers_of_ou $false $lang.computers $lang.s_computers }
         6 { $kilep = OUUsersComputers $lang.all_users_of_ou $true $lang.users $lang.s_users }
-        7 { $kilep = MassModify }
+        7 { $kilep = MassModify; $kilep = $kilep[-1] }
+        # Number 7 probably needs some explanation, as it gave me a headache for quite a few hours.
+        # Powershell functions have a bit of an unpredictable behavior, as they tend to return other
+        # elements of the pipeline too, not just the one we explicitly stated them to return.
+        # In this case the returned value is not a string, but an array for some inexplicable
+        # (to me at least) reason, so instead of turning the function into a class (which, while would've
+        # solved this problem, didn't seem ideal in this case), I decided to get the last element
+        # of the returned array, which is exactly what I actually wanted to be returned.
         S { SavePath }
     }    
 } while ($kilep -ne $lang.char_quit)
