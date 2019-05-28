@@ -1118,7 +1118,7 @@ function SingleUser
             {
                 $menu = [QueryFiltering]::new($true, $true, $lang.memberships_of_user, $username)
                 $menu.Menu()
-                $result = invoke-expression $menu.Output() -Verbose
+                $result = invoke-expression $menu.Output()
             }
 
             Write-Host "`n$($lang.what_do_you_want_with_results)"
