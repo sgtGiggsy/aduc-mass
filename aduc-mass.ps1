@@ -1454,7 +1454,7 @@ function MassModify
                 # As a security measure, we change users only from the chosen Organizational Unit,
                 # and from nowhere else, even if the user exist in another OU.
                 $hiba | add-member -membertype NoteProperty -name "$($attribute[0])" -Value "$($ADUser)"
-                if ($ADUser -and (Get-ADUser -SearchBase $ou -Filter "samAccountName -eq '$ADUser'"))
+                if ($ADUser -and (Get-ADUser -SearchBase $ou -Filter "samAccountName -eq '$ADUser'") -or $i -eq 1)
                 {
                     $backup | add-member -membertype NoteProperty -name "$($attribute[0])" -Value "$($ADUser)"
                     for ($j = 1; $j -lt $oszlopok.Length; $j++) # We step through the columns one by one
@@ -1470,7 +1470,21 @@ function MassModify
                         {
                             # Exception catch 2: It tells the user if an attribute is cannot be changed for some reason. As for now it doesn't differenciate
                             # if the user doesn't have sufficient right to change the value, or the CSV file didn't have value for the attribute.
-                            $hiba | add-member -membertype NoteProperty -name "$($attribute[$j])" -Value "$($lang.unsuccesful)" -Force
+                            if (!(Get-ADUser -SearchBase $ou -Filter "samAccountName -eq '$ADUser'") -and $i -eq 1)
+                            {
+                                if ($j -eq 1)
+                                {
+                                    $hiba | add-member -membertype NoteProperty -name "$($attribute[1])" -Value "$($lang.user_doesnt_exist) $ounev $($lang.not_in_the_ou)"
+                                }
+                                else
+                                {
+                                    $hiba | add-member -membertype NoteProperty -name "$($attribute[$j])" -Value ""
+                                }
+                            }
+                            else
+                            {
+                                $hiba | add-member -membertype NoteProperty -name "$($attribute[$j])" -Value "$($lang.unsuccesful)" -Force
+                            }
                         }
                     }
                     $csvout.Append($backup)
