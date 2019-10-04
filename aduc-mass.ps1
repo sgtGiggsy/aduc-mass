@@ -698,6 +698,112 @@ class ProgressCounter
     }
 }
 
+class Letezik 
+{
+    $object
+    Letezik ($object)
+    {
+        $this.obj = $object
+    }
+    [string] static Checkuser($obj)
+    {
+        $letezik = $false # We assume the enetered object doesn't exist
+        do
+        {
+            if (@(Get-ADUser -Filter { SamAccountName -eq $obj }).Count -eq 0) # If the object doesn't exist in the way it was entered, we step into this conditional
+            {                
+                if (@(Get-ADUser -ldapfilter "(samaccountname=*$obj*)").Count -eq 1) # If there is only one object with the matching name fragment, we don't need to go further
+                {
+                    $uj = (@(Get-ADUser -ldapfilter "(samaccountname=*$obj*)").samAccountName)
+                    $obj = $uj
+                    $letezik = $true
+                }
+                elseif (@(Get-ADUser -ldapfilter "(samaccountname=*$obj*)").Count -gt 1) # If there are more objects with the matching name fragment, we step into this conditional
+                {
+                    $db = @(Get-ADUser -ldapfilter "(samaccountname=*$obj*)").Count # It makes the code faster if we get this info only once
+                    [array]$objtomb = @(Get-ADUser -ldapfilter "(samaccountname=*$obj*)").samAccountName # We put the results into an array
+                    [array]$lehettomb = $null # We need this, as this will tell the option checking function which ones are the allowed choices
+                    Clear-Host
+                    Write-Host $script:lang.more_than_one_obj
+                    Write-Host $("{0, 5} {1, -16} {2}" -f $script:lang.number, $script:lang.username, $script:lang.name)
+                    for ($i = 0; $i -lt $db; $i++)
+                    {
+                        [string]$samaccname = $objtomb[$i] # We convert the content of the system object to string as we need only that
+                        $sorsz = $i + 1
+                        $lehettomb += $sorsz # It adds the current number to the allowed choices list
+                        Write-Host $("{0, 5} {1, -16} {2}" -f "($sorsz)", $samaccname, @(Get-ADUser -Filter { SamAccountName -eq $samaccname }).Name)
+                    }
+                    Write-Host $script:lang.choose_from_list
+                    $valasztott = Valaszt $lehettomb # We call the option checking function to supervise the choice entered by the user
+                    [string]$obj = $objtomb[$valasztott-1] # We put the chosen samAccountName into the output string variable
+                    $letezik = $true
+                }
+                else 
+                {
+                    Write-Host "`n$($script:lang.id_not_exist)" "`n" -ForegroundColor Red
+                    Write-Host $script:lang.reenter_id
+                    $obj = Read-Host -Prompt $script:lang.id
+                    $letezik = $false
+                }
+            }
+            else 
+            {
+                $letezik = $true
+            }
+        } while(!($letezik))
+        return [string]$obj
+    }
+
+    [string] static Checkgroup($obj)
+    {
+        $letezik = $false # We assume the enetered object doesn't exist
+        do
+        {
+            if (@(Get-ADGroup -Filter { SamAccountName -eq $obj }).Count -eq 0) # If the object doesn't exist in the way it was entered, we step into this conditional
+            {                
+                if (@(Get-ADGroup -ldapfilter "(samaccountname=*$obj*)").Count -eq 1) # If there is only one object with the matching name fragment, we don't need to go further
+                {
+                    $uj = (@(Get-ADGroup -ldapfilter "(samaccountname=*$obj*)").samAccountName)
+                    $obj = $uj
+                    $letezik = $true
+                }
+                elseif (@(Get-ADGroup -ldapfilter "(samaccountname=*$obj*)").Count -gt 1)# If there are more objects with the matching name fragment, we step into this conditional
+                {
+                    $db = @(Get-ADGroup -ldapfilter "(samaccountname=*$obj*)").Count # It makes the code faster if we get this info only once
+                    [array]$objtomb = @(Get-ADGroup -ldapfilter "(samaccountname=*$obj*)").samAccountName # We put the results into an array
+                    [array]$lehettomb = $null # We need this, as this will tell the option checking function which ones are the allowed choices
+                    Clear-Host
+                    Write-Host $script:lang.more_than_one_obj
+                    Write-Host $("{0, 5} {1, -16}" -f $script:lang.number, $script:lang.group_name)
+                    for ($i = 0; $i -lt $db; $i++)
+                    {
+                        [string]$samaccname = $objtomb[$i] # We convert the content of the system object to string as we need only that
+                        $sorsz = $i + 1
+                        $lehettomb += $sorsz  # It adds the current number to the allowed choices list
+                        Write-Host $("{0, 5} {1, -16}" -f "($sorsz)", $samaccname)
+                    }
+                    Write-Host $script:lang.choose_from_list
+                    $valasztott = Valaszt $lehettomb # We call the option checking function to supervise the choice entered by the user
+                    [string]$obj = $objtomb[$valasztott-1] # We put the chosen samAccountName into the output string variable
+                    $letezik = $true
+                }
+                else 
+                {
+                    Write-Host "`n$($script:lang.id_not_exist)" "`n" -ForegroundColor Red
+                    Write-Host $script:lang.reenter_id
+                    $obj = Read-Host -Prompt $script:lang.id
+                    $letezik = $false
+                }
+            }
+            else 
+            {
+                $letezik = $true
+            }
+        } while(!($letezik))
+        return [string]$obj
+    }
+}
+
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
 #-#-#                                    FUNCTIONS                                            #-#-#
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
@@ -775,39 +881,6 @@ function OUcheck
         }
     } while ($ouletezik -eq $false)
     return $ou
-}
-
-function Letezike 
-{
-## This function checks if the identifier, the user entered is exist, and asks them to enter it again, if not.
-    param ($obj, $isuser)
-    
-    if ($isuser)
-    {
-        do
-        {
-            if (@(Get-ADUser -Filter { SamAccountName -eq $obj }).Count -eq 0)
-            {                
-                Write-Host "`n$($lang.id_not_exist)" "`n" -ForegroundColor Red
-                Write-Host $lang.reenter_id
-                $obj = Read-Host -Prompt $lang.id
-            }
-        } while(@(Get-ADUser -Filter { SamAccountName -eq $obj }).Count -eq 0)
-    }
-
-    else
-    {
-        do
-        {
-            if (@(Get-ADGroup -Filter { SamAccountName -eq $obj }).Count -eq 0)
-            {                
-                Write-Host "`n$($lang.id_not_exist)" "`n" -ForegroundColor Red
-                Write-Host $lang.reenter_id
-                $obj = Read-Host -Prompt $lang.id
-            }
-        } while(@(Get-ADGroup -Filter { SamAccountName -eq $obj }).Count -eq 0)
-    }
-    return $obj
 }
 
 function Createcustom
@@ -908,6 +981,7 @@ function Valaszt
 ## This function is responsible to check if users entered one of the allowed choices
     param($choice) # It receives an array of the possible choices, it's not fixed, so it doesn't matter if we have 2 allowed choices, or 30
     $probalkozottmar = $false
+    #Write-Host $choice #For debug purposes
     do
     {        
         if ($probalkozottmar -eq $false) # Here the user enters their choice, if it's their first try
@@ -998,7 +1072,7 @@ function UsersOfGroup
         MenuTitle($lang.users_of_group) 
         Write-Host $lang.enter_group_name
         $csopnev = Read-Host -Prompt $lang.id
-        $csopnev = Letezike $csopnev # It calls the function to check if the entered groupname exist
+        $csopnev = [Letezik]::Checkgroup($csopnev)
 
         # We get here if we want to do different tasks with the group #
         do
@@ -1043,7 +1117,7 @@ function UsersOfGroup
                             Write-Host $lang.group_members_copy_the $kitol.name $lang.group_members_copy "`n"
                             Write-Host $lang.enter_target_group
                             $targetgroup = Read-Host -Prompt $lang.group_name
-                            $targetgroup = Letezike $targetgroup
+                            $targetgroup = [Letezik]::Checkgroup($targetgroup)
 
                             # The process of adding the members to the other group #
                             [array]$members = Get-ADGroupMember $csopnev;
@@ -1099,7 +1173,7 @@ function SingleUser
         $result = $null
         Write-Host $lang.enter_username
         $username = Read-Host -Prompt $lang.id
-        $username = Letezike $username $true # It calls the function to check if the entered username exist
+        $username = [Letezik]::Checkuser($username)
         do
         {
             MenuTitle($lang.memberships_of_user)
@@ -1118,7 +1192,7 @@ function SingleUser
             {
                 $menu = [QueryFiltering]::new($true, $true, $lang.memberships_of_user, $username)
                 $menu.Menu()
-                $result = invoke-expression $menu.Output()
+                $result = invoke-expression $menu.Output() -Verbose
             }
 
             Write-Host "`n$($lang.what_do_you_want_with_results)"
@@ -1156,7 +1230,7 @@ function SingleUser
                             Write-Host $kitol.Name $lang.users_groups_copy
                             Write-Host $lang.enter_target_user
                             $targetuser = Read-Host -Prompt $lang.id
-                            $targetuser = Letezike $targetuser $true
+                            $targetuser = [Letezik]::Checkuser($targetuser)
                         
                             # A The process of copying memberships #
                             [array]$csopnevek = Get-ADPrincipalGroupMembership $username;
